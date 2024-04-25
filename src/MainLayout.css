@@ -1,0 +1,43 @@
+.main{
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: black;
+}
+
+a{
+    color: black;
+}
+
+.header{
+    width: 100%;
+    min-height: 70px;
+    max-height: 10%;
+    border-bottom: 1px solid black;
+}
+
+.container{
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    position: relative;
+}
+
+.sidebar{
+    height: 100%;
+    max-width: 30%;
+    border-right: 1px solid black;    
+}
+
+.container__open-button{
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    cursor: pointer;
+}
+
+.content{
+    height: 100%;
+    flex-grow: 1;
+}
