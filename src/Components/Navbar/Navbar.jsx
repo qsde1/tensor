@@ -3,16 +3,10 @@ import { IoMdClose } from "react-icons/io";
 import {SidebarData} from './SideBarData';
 import './Navbar.css';
 
-export default function Navbar({isHidden = false, handleNavbar}) {
+export default function Navbar() {
     return (
         <div className='navbar'>
-            <div className='navbar__container'>                
-                <div
-                    className='navbar__container__close-button'
-                    onClick={handleNavbar}
-                >
-                    <IoMdClose />
-                </div>
+            <div className='navbar__container'>
                 <nav className='nav-menu active'>
                     <ul className='nav-menue-items'>
                         {SidebarData.map((item, index) => {

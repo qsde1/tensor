@@ -17,7 +17,7 @@ export default class MainLayout extends Component {
 
     render(){
         return (
-            <IconContext.Provider value={{color: 'rgb(40,176,217)', size: '1.5em'}}>
+            <IconContext.Provider value={{color: 'rgb(70,137,245)', size: '1.5em'}}>
             <div className='main'>
                 <div className="header">
                     {this.props.header}
@@ -27,16 +27,21 @@ export default class MainLayout extends Component {
                         <>
                             {this.state.isHiddenSidebar &&
                                 <div
-                                    className='container__open-button'
+                                    className='container__open-sidebar-button'
                                     onClick={this.toggleSidebar}
                                 >
                                     <IoIosArrowForward />
                                 </div>
-                            }
+                            }                            
                             {!this.state.isHiddenSidebar &&
                                 <div className="sidebar">
-                                    {/* {не знаю как правильно передать props в компоненту, полученную из props, поэтому использую cloneElement} */}
-                                    {cloneElement(this.props.sidebar,{isHidden:this.state.isHiddenSidebar, handleNavbar:this.toggleSidebar})}
+                                    {this.props.sidebar}
+                                    <div
+                                        className='container__close-sidebar-button'
+                                        onClick={this.toggleSidebar}
+                                    >
+                                        <IoMdClose />
+                                    </div>
                                 </div>
                             }
                         </>
