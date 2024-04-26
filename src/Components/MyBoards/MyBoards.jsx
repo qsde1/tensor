@@ -50,7 +50,7 @@ export default class MyBoards extends Component {
           </div>
           <div className='my-boards__boards'>
             <div className='my-boards__boards__container'>
-              {this.state.items.map(i=>                
+              {this.state.items.map(i=>
                   <Board
                     className='my-boards__boards__item'
                     key={i.id}
