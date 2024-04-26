@@ -44,7 +44,6 @@
 
 .my-boards__boards{
     flex-grow: 1;
-    border: 1px solid gold;    
     overflow: auto;
 }
 
@@ -58,14 +57,13 @@
 }
 
 .my-boards__boards__item{
-    border: 1px solid black;
+    border: 1px solid rgb(211,211,211);;
     margin: 0 0 25px 2.5%;
     padding: 25px 0;
     width: 30%;
     height: 200px;
     background-color: rgb(245,245,245);
     border-radius: 5px;
-    border-color: rgb(211,211,211);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
