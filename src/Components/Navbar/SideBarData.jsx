@@ -1,6 +1,4 @@
 import React from "react";
-import { FaBars } from "react-icons/fa";
-import { IoMdClose } from "react-icons/io";
 import { CiUser } from "react-icons/ci";
 import { LuUsers2 } from "react-icons/lu";
 import { SlPresent } from "react-icons/sl";

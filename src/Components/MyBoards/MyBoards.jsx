@@ -12,13 +12,16 @@ export default class MyBoards extends Component {
 
   addNewItem = () => {      
     let nextId = this.state.items.length == 0 ? 0 : this.state.items[this.state.items.length-1].id + 1
+    let date = new Date().getDate()
+    let month = new Date().getMonth()
+    month++;    
     this.setState({
       items: [
         ...this.state.items,
         {
           id: nextId,
           text: `новая доска ${nextId}`,
-          dateAddet: new Date().getDate()+1 + "." + new Date().getMonth()+1,
+          dateAddet: `${date}.${month.toString().length == 1 ? '0'+month : month}`,
         }
       ]
     });
