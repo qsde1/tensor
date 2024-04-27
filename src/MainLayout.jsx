@@ -1,57 +1,52 @@
-import { Component, cloneElement, renderItem } from 'react';
 import './MainLayout.css'
-import MyBoards from './Components/MyBoards/MyBoards'
-import Navbar from './Components/Navbar/Navbar';
-import HeaderBar from './Components/Header/HeaderBar';
+import { useState } from 'react';
 import { IconContext} from 'react-icons';
 import { IoMdClose, IoIosArrowForward } from "react-icons/io";
 
-export default class MainLayout extends Component {
-    state = {
-        isHiddenSidebar: false
+const MainLayout = ({header, sidebar, content}) => {
+    const [isHiddenSidebar, setHiddenSidebar] = useState(false);
+
+    const toggleSidebar = () => {
+        setHiddenSidebar(!isHiddenSidebar);
     }
 
-    toggleSidebar = () => {
-        this.setState({isHiddenSidebar:!this.state.isHiddenSidebar});
-    }
-
-    render(){
-        return (
-            <IconContext.Provider value={{color: 'rgb(70,137,245)', size: '1.5em'}}>
-            <div className='main'>
-                <div className="header">
-                    {this.props.header}
-                </div>
-                <div className="container">                    
-                    {this.props.sidebar &&
-                        <>
-                            {this.state.isHiddenSidebar &&
+    return (
+        <IconContext.Provider value={{color: 'rgb(70,137,245)', size: '1.5em'}}>
+        <div className='main'>
+            <div className="header">
+                {header}
+            </div>
+            <div className="container">                    
+                {sidebar &&
+                    <>
+                        {isHiddenSidebar &&
+                            <div
+                                className='container__open-sidebar-button'
+                                onClick={toggleSidebar}
+                            >
+                                <IoIosArrowForward />
+                            </div>
+                        }                            
+                        {!isHiddenSidebar &&
+                            <div className="sidebar">
+                                {sidebar}
                                 <div
-                                    className='container__open-sidebar-button'
-                                    onClick={this.toggleSidebar}
+                                    className='container__close-sidebar-button'
+                                    onClick={toggleSidebar}
                                 >
-                                    <IoIosArrowForward />
+                                    <IoMdClose />
                                 </div>
-                            }                            
-                            {!this.state.isHiddenSidebar &&
-                                <div className="sidebar">
-                                    {this.props.sidebar}
-                                    <div
-                                        className='container__close-sidebar-button'
-                                        onClick={this.toggleSidebar}
-                                    >
-                                        <IoMdClose />
-                                    </div>
-                                </div>
-                            }
-                        </>
-                    }
-                    <div className="content">
-                        {this.props.content}
-                    </div>
+                            </div>
+                        }
+                    </>
+                }
+                <div className="content">
+                    {content}
                 </div>
             </div>
-            </IconContext.Provider>
-        )
-    }
+        </div>
+        </IconContext.Provider>
+    )
 }
+
+export default MainLayout;

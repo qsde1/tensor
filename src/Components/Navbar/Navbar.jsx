@@ -1,5 +1,3 @@
-import React from 'react';
-import { IoMdClose } from "react-icons/io";
 import {SidebarData} from './SideBarData';
 import './Navbar.css';
 
