@@ -22,8 +22,7 @@ a{
     max-height: 90%;
     width: 100%;
     flex-grow: 1;
-    display: flex;
-    position: relative;    
+    display: flex;    
 }
 
 .sidebar{
