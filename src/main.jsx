@@ -1,16 +1,47 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import MainLayout from './MainLayout'
-import MyBoards from './Components/MyBoards/MyBoards'
-import Navbar from './Components/Navbar/Navbar';
-import HeaderBar from './Components/Header/HeaderBar';
+import {
+  createBrowserRouter,
+  RouterProvider
+} from 'react-router-dom'
+import { ConfigProvider } from 'antd'
+
+import MainLayout from './layout/mainLayout'
+import MyBoards from './pages/MyBoards'
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <MainLayout/>,
+    children: [
+      {
+        path: '/',
+        element: <div>Главная</div>
+      },
+      {
+        path: 'my-boards',
+        element: <MyBoards/>
+      },
+    ]
+  },
+])
+
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <MainLayout
-      header={<HeaderBar/>}
-      sidebar={<Navbar/>}
-      content={<MyBoards/>}
-    />
-  </React.StrictMode>,
+    <ConfigProvider
+      theme={{
+        "components": {
+          "Layout": {
+            "headerBg": "rgb(255, 255, 255)",
+            "siderBg": "rgb(255, 255, 255)",
+            "bodyBg": "rgb(255, 255, 255)"
+          },
+          "Menu": {
+            "colorSplit": "rgba(255, 255, 255)",
+          }
+        }
+      }}
+    >
+      <RouterProvider router={router}/>
+    </ConfigProvider>
 )
