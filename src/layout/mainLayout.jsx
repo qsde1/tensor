@@ -6,7 +6,10 @@ import {
 
 import { Outlet } from "react-router-dom";
 import { Children, useEffect, useState } from "react";
-import { myBoardsContext, setMyBoardsContext } from "../contexts/boardsContext";
+import { myBoardsContext, setMyBoardsContext, itemsMenuSideBarContext } from "../contexts/boardsContext";
+
+// import { itemsMenuSideBarContext } from "../contexts/boardsContext";
+import Sider from "../components/Sider";
 
 //contexts
 
@@ -44,16 +47,63 @@ const myBoards = [
 const MainPage = () => {
     const [myBoardsList, setMyBoardsList] = useState(myBoards);
 
+
+    const menuItems = [
+        {
+            key: 'myBoards',
+            label: 'Мои доски',
+            children: [
+                {
+                    key: 'allMyBoards',
+                    label: 'Все доски',
+                    path: 'my-boards'
+                },
+                ...myBoardsList.map(b => {
+                    return {
+                        key: `myBoards${b.id}`,
+                        label: b.name,
+                        path: `my-boards/${b.id}`
+                    }
+                })
+            ]
+        },
+        {
+            key: 'friendsBoards',
+            label: 'Доски друзей',
+            children: [
+                {
+                    key: 'friends1',
+                    label: 'Петя Иванов- др'
+                },
+                {
+                    key: 'friends2',
+                    label: 'Родион Раскольников - на бабушкин юбилей'
+                },
+                {
+                    key: 'friends3',
+                    label: 'Соня Мармеладова- только фанс'
+                },
+            ]
+        }
+    ]
+
+
     return (
         <myBoardsContext.Provider value={myBoardsList}>
             <setMyBoardsContext.Provider value={setMyBoardsList}>
+        <itemsMenuSideBarContext.Provider value={menuItems}> 
                 <Layout style={styles.layout}>
                     <Layout style={styles.layout}>
+                        <Sider                    
+                            width={250}
+                            items={menuItems}
+                        />
                         <Layout.Content>
                             <Outlet/>
                         </Layout.Content>
                     </Layout>
                 </Layout>
+            </itemsMenuSideBarContext.Provider>
             </setMyBoardsContext.Provider>
         </myBoardsContext.Provider>
     )
