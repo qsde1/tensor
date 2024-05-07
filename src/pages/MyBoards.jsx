@@ -6,6 +6,7 @@ import {
 } from "antd"
 import { useContext, useState } from "react"
 import { myBoardsContext, setMyBoardsContext } from "../contexts/boardsContext"
+import Header from "../components/Header"
 
 const MyBoards = () => {
     const boardsContext = useContext(myBoardsContext);
@@ -26,7 +27,17 @@ const MyBoards = () => {
 
     return (
         <>
-            <Layout>                
+            <Layout>
+                <Header>
+                    <div>Мои доски</div>
+                    <div>
+                        <Button
+                            onClick={createBoard}
+                        >
+                            Новая доска
+                        </Button>
+                    </div>
+                </Header>
                 <Layout.Content style={{
                     padding: "0 5px",
                 }}>

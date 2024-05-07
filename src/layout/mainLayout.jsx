@@ -6,6 +6,7 @@ import {
 
 import { Outlet } from "react-router-dom";
 import { Children, useEffect, useState } from "react";
+import Header from "../components/Header";
 import { myBoardsContext, setMyBoardsContext, itemsMenuSideBarContext } from "../contexts/boardsContext";
 
 // import { itemsMenuSideBarContext } from "../contexts/boardsContext";
@@ -93,6 +94,21 @@ const MainPage = () => {
             <setMyBoardsContext.Provider value={setMyBoardsList}>
         <itemsMenuSideBarContext.Provider value={menuItems}> 
                 <Layout style={styles.layout}>
+                    <Header
+                        style={styles.header}
+                        height={80}
+                    >
+                        <img
+                            src="logo.png"
+                            style={{
+                                height: '60px',                        
+                            }}
+                        />
+                        <Avatar
+                            src='https://media.tenor.com/KrKQuNciqbYAAAAM/pedro.gif'
+                            size={64}
+                        />
+                    </Header>
                     <Layout style={styles.layout}>
                         <Sider                    
                             width={250}
