@@ -1,0 +1,546 @@
+openapi: 3.0.3
+info:
+  title: Swagger Petstore - OpenAPI 3.0
+  version: 0.0.3
+servers:
+  - url: http://localhost:5173/
+    description: ну типо проект
+paths:
+
+  # /:
+  
+  #ээ
+  # /auth
+  # /registration
+  
+  #boards
+  # /boards
+  # /boards/create
+  # /boards/friends
+  # /boards/{board_id}
+  # /boards/{board_id}/edit
+  # /boards/{board_id}/delete
+  # /boards/reserved-gifts
+  
+  #gifts
+  # /gifts/create
+  # /gifts/{gift_id}/delete
+  # /gifts/{gift_id}/edit
+
+  /:
+    get:
+      summary: главная страница
+      tags:
+      - page
+      operationId: main
+      responses:
+        '200':
+          description: главная страница
+          
+  /registration:
+    post:
+      summary: регистрация
+      tags:
+        - page
+      operationId: registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                  example: login
+                password:
+                  type: string
+                  example: pass123
+                repassword:
+                  type: string
+                  example: pass123
+      responses:
+        '200':
+          description: успешная регистрация
+          
+  /auth:
+    post:
+      summary: авторизация
+      tags:
+        - page
+      operationId: auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                  example: login
+                password:
+                  type: string
+                  example: pass123
+      responses:
+        '200':
+          description: успешная авторизация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: integer
+        '404':
+          description: отказано в доступе
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+  
+  /boards:
+    get:
+      summary: список всех досок пользователя
+      tags:
+        - boards
+      operationId: get_boards
+      responses:
+        '200':
+          description: список всех досок пользователя
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: 
+                      type: integer
+                      example: 1
+                    name: 
+                      type: string
+                      example: доска 1
+                    description:
+                      type: string
+                      example: доска 1
+                    img:
+                      type: string
+                      example: rofl.jpg
+      
+  /boards/create:
+    post:
+      summary: создать доску
+      tags:
+        - boards
+      operationId: create_board
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: 
+                  type: integer
+                  example: 1
+                name: 
+                  type: string
+                  example: доска 1
+                description:
+                  type: string
+                  example: доска 1
+                img:
+                  type: string
+                  example: rofl.jpg
+      responses:
+        '200':
+          description: доска создана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: 
+                    type: integer
+                    example: 1
+                  name: 
+                    type: string
+                    example: доска 1
+                  description:
+                    type: string
+                    example: доска 1
+                  img:
+                    type: string
+                    example: rofl.jpg
+                  
+  /boards/friends:
+    get:
+      summary: получить доски друзей
+      tags:
+        - boards
+      operationId: get_boards_fiends
+      responses:
+        '200':
+          description: доски друзей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: 
+                      type: integer
+                      example: 1
+                    name: 
+                      type: string
+                      example: доска 1
+                    description:
+                      type: string
+                      example: доска 1
+                    img:
+                      type: string
+                      example: rofl.jpg
+                      
+  /boards/{board_id}:
+    get:
+      summary: получить доску по id
+      tags:
+        - boards
+      operationId: get_board_by_id
+      parameters:
+        - name: board_id
+          in: path
+          required: true
+          description: идентификатор доски
+          schema:
+            type: string
+          example: 1
+      responses:
+        '200':
+          description: доска
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: 
+                    type: integer
+                    example: 1
+                  name: 
+                    type: string
+                    example: доска 1
+                  description:
+                    type: string
+                    example: доска 1
+                  img:
+                    type: string
+                    example: rofl.jpg
+        '404':
+          description: доска не найдена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg: 
+                    type: string
+                    example: доска не найдена
+  
+  /boards/{board_id}/edit:
+    post:
+      summary: редактирование доски
+      tags:
+        - boards
+      operationId: board_edit
+      parameters:
+        - name: board_id
+          in: path
+          required: true
+          description: идентификатор доски
+          schema:
+            type: string
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: 
+                  type: integer
+                  example: 1
+                name: 
+                  type: string
+                  example: новая доска 1
+                description:
+                  type: string
+                  example: доска 1
+                img:
+                  type: string
+                  example: newrofl.jpg
+      responses:
+        '200':
+          description: доска
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: 
+                    type: integer
+                    example: 1
+                  name: 
+                    type: string
+                    example: новая доска 1
+                  description:
+                    type: string
+                    example: доска 1
+                  img:
+                    type: string
+                    example: newrofl.jpg
+      
+  /boards/{board_id}/delete:
+    delete:
+      summary: удаление доски
+      tags:
+        - boards
+      operationId: board_delete
+      parameters:
+        - name: board_id
+          in: path
+          required: true
+          description: идентификатор доски
+          schema:
+            type: string
+          example: 1
+      responses:
+        '200':
+          description: доска
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: 
+                    type: integer
+                    example: 1
+                  name: 
+                    type: string
+                    example: доска 1
+                  description:
+                    type: string
+                    example: доска 1
+                  img:
+                    type: string
+                    example: rofl.jpg
+
+  /boards/reserved-gifts:
+    get:
+      summary: получить список забронированных подарков
+      tags:
+       - boards
+      operationId: get_reserved_gifts
+      responses:
+        '200':
+          description: список забронированных подарков
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: подарок 1
+                    description:
+                      type: string
+                      example: подарок 1
+                    img:
+                      type: string
+                      example: gift.jpg
+                    board_id:
+                      type: integer
+                      example: 1
+                    src:
+                      type: integer
+                      example: url
+                      
+  
+  /gifts/create:
+    post:
+      summary: создать подарок
+      tags:
+       - gifts
+      operationId: gift_create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                name:
+                  type: string
+                  example: подарок 1
+                description:
+                  type: string
+                  example: подарок 1
+                img:
+                  type: string
+                  example: gift.jpg
+                board_id:
+                  type: integer
+                  example: 1
+                src:
+                  type: integer
+                  example: url
+      responses:
+        '200':
+          description:  созданный подарок
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: подарок 1
+                    description:
+                      type: string
+                      example: подарок 1
+                    img:
+                      type: string
+                      example: gift.jpg
+                    board_id:
+                      type: integer
+                      example: 1
+                    src:
+                      type: integer
+                      example: url
+    
+  /gifts/{gift_id}/delete:
+    delete:
+      summary: удаление подарка
+      tags:
+        - gifts
+      operationId: gift_delete
+      parameters:
+        - name: gift_id
+          in: path
+          required: true
+          description: идентификатор подарка
+          schema:
+            type: string
+          example: 1
+      responses:
+        '200':
+          description: доска
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: подарок 1
+                    description:
+                      type: string
+                      example: подарок 1
+                    img:
+                      type: string
+                      example: gift.jpg
+                    board_id:
+                      type: integer
+                      example: 1
+                    src:
+                      type: integer
+                      example: url
+  
+  /gifts/{gift_id}/edit:
+    post:
+        summary: редактирование подарка
+        tags:
+          - gifts
+        operationId: gift_edit
+        parameters:
+          - name: gift_id
+            in: path
+            required: true
+            description: идентификатор подарка
+            schema:
+              type: string
+              example: 1
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: подарок 1
+                  description:
+                    type: string
+                    example: подарок 1
+                  img:
+                    type: string
+                    example: gift.jpg
+                  board_id:
+                    type: integer
+                    example: 1
+                  src:
+                    type: integer
+                    example: url
+        responses:
+          '200':
+            description: доска
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: подарок 1
+                    description:
+                      type: string
+                      example: подарок 1
+                    img:
+                      type: string
+                      example: gift.jpg
+                    board_id:
+                      type: integer
+                      example: 1
+                    src:
+                      type: integer
+                      example: url
