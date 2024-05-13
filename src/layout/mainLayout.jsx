@@ -57,13 +57,13 @@ const MainPage = () => {
                 {
                     key: 'allMyBoards',
                     label: 'Все доски',
-                    path: 'my-boards'
+                    path: 'boards'
                 },
                 ...myBoardsList.map(b => {
                     return {
                         key: `myBoards${b.id}`,
                         label: b.name,
-                        path: `my-boards/${b.id}`
+                        path: `boards/${b.id}`
                     }
                 })
             ]

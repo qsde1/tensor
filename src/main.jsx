@@ -9,6 +9,14 @@ import { ConfigProvider } from 'antd'
 import MainLayout from './layout/mainLayout'
 import MyBoards from './pages/MyBoards'
 
+import ('./mocs/brows')
+
+async function enable() {
+  const{worker } = await import ('./mocs/brows')
+  return worker.start()
+}
+
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -19,15 +27,15 @@ const router = createBrowserRouter([
         element: <div>Главная</div>
       },
       {
-        path: 'my-boards',
+        path: 'boards',
         element: <MyBoards/>
       },
     ]
   },
 ])
 
-
-ReactDOM.createRoot(document.getElementById('root')).render(
+enable().then(() => {
+  ReactDOM.createRoot(document.getElementById('root')).render(
     <ConfigProvider
       theme={{
         "components": {
@@ -45,3 +53,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <RouterProvider router={router}/>
     </ConfigProvider>
 )
+})
+
+

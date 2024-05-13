@@ -4,15 +4,24 @@ import {
     Flex,
     Card,
 } from "antd"
-import { useContext, useState } from "react"
+import { useContext, useState, useEffect } from "react"
 import { myBoardsContext, setMyBoardsContext } from "../contexts/boardsContext"
 import Header from "../components/Header"
 import ModalAddBoard from "../components/ModalAddBoard.jsx";
+
 
 const MyBoards = () => {
     const boardsContext = useContext(myBoardsContext);
     const setBoardsContext = useContext(setMyBoardsContext);
     const [isModalAddBoardOpen, setIsModalAddBoardOpen] = useState(false);
+
+    useEffect(() =>{
+        (async () => {
+            let result = await fetch('/boards')
+            // console.log('ВСЕЭТОВРЕМЯЭТОБЫЛЯДИО')
+            console.log(await result.json());
+        }) ();
+    }, [])
 
     function createBoard(){
         const id = boardsContext.length == 0 ? 0 : boardsContext[boardsContext.length-1].id + 1
