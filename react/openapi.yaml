@@ -21,6 +21,12 @@ paths:
   # /boards/{board_id}/edit
   # /boards/{board_id}/delete
   # /boards/reserved-gifts
+
+
+  #/fiends/boards
+
+  #/fiends/fiend_id/boards
+  #/fiends/fiend_id/boards/board_id
   
   #gifts
   # /gifts/create
