@@ -1,7 +1,7 @@
-import { Flex, Layout, Button, Modal, Form, Input, Tag, Popover, Space, Table, Avatar, DatePicker, List as ListANT, Card } from "antd";
+import { Flex, Layout, Button, Modal, Form, Input, Tag, Popover, Space, Table, Avatar, DatePicker, List as ListANT, Card, Cascader, Drawer, TimePicker } from "antd";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useLoaderData, useParams } from "react-router-dom";
-import { DeleteOutlined, PlusCircleOutlined, StepForwardOutlined, UserOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PlusCircleOutlined, StepForwardOutlined, UserOutlined } from "@ant-design/icons";
 // import { change_status_task_by_id, create_task, delete_task_by_id, edit_task, get_colors, get_statuses_by_project_id, get_task_list_by_id, get_tasks_by_list_id, get_user_by_task_id, get_user_role_by_project_id, take_task } from "../Api/api";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
@@ -35,6 +35,7 @@ const TasksList = observer(() => {
     const userStore = useContext(UserStoreContext);
     const [isModalCreateTaskOpen, setIsModalCreateTaskOpen] = useState(false);
     const [isModalEditTaskOpen, setIsModalEditTaskOpen] = useState(false);    
+    const [isDrawerEditTaskOpen, setIsDrawerEditTaskOpen] = useState(false);
 
     const [editableTask, setEditableTask] = useState(null);
     
@@ -51,6 +52,11 @@ const TasksList = observer(() => {
         }
     }, [tasksStore.isStoreReady])
 
+
+    useEffect(() => {
+        if(projectStore.users)
+            console.log(projectStore.users);
+    }, projectStore.users)
     
     const showModalCreateTask = () => {
         setIsModalCreateTaskOpen(true);
@@ -69,6 +75,17 @@ const TasksList = observer(() => {
         setEditableTask(null)
         setIsModalEditTaskOpen(false);
     };
+
+    const showDrawerEditTask = (task) => {
+        setEditableTask(task)
+        setIsDrawerEditTaskOpen(true)
+
+    }
+
+    const closeDrawerEditTask = () => {
+        setEditableTask(null)
+        setIsDrawerEditTaskOpen(false)
+    }
 
     // async function updateTasksListState(){
     //     let result  = await get_task_list_by_id(tasksListId);
@@ -125,7 +142,6 @@ const TasksList = observer(() => {
         let date = task.expected_date;
         if(date)
             date = new Date(date.$y, date.$M, date.$D).getTime();
-        console.log(date);
     }
 
     
@@ -194,6 +210,8 @@ const TasksList = observer(() => {
                             users={projectStore.users}
                             addTaskExecutor={addTaskExecutor}
                             currentUser={userStore.user}
+                            showDrawerEditTask={showDrawerEditTask}
+                            closeDrawerEditTask={closeDrawerEditTask}
                         />
                     </>
                     }
@@ -208,15 +226,25 @@ const TasksList = observer(() => {
                     closeModal={closeModalCreateTask}
                 />
             }
-            {isModalEditTaskOpen && 
+            {isModalEditTaskOpen &&
                 <EditTaskModal
                     isModalOpen={isModalEditTaskOpen}
                     editTask={editTask}
                     closeModal={closeModalEditTask}
                     task={editableTask}
                 />
-            
-            }            
+            }
+            {isDrawerEditTaskOpen &&
+                <DrawerEditTask
+                    closeDrawer={closeDrawerEditTask}
+                    isDrawerOpen={isDrawerEditTaskOpen}
+                    editTask={editTask}
+                    task={tasksStore.tasks.find(t=>t.id == editableTask.id)}
+                    users={projectStore.users}
+                    statuses={projectStore.statuses}
+                    addTaskExecutor={addTaskExecutor}
+                />
+            }
         </>
     );
 })
@@ -309,6 +337,87 @@ const EditTaskModal = ({
     )
 }
 
+const DrawerEditTask = ({
+    closeDrawer,
+    isDrawerOpen,
+    editTask,
+    task,
+    users,
+    statuses,
+    addTaskExecutor,
+}) => {
+
+    const [creator, setCreator] = useState(null)
+    const [executor, setExecutor] = useState(null)
+    const [status, setStatus] = useState(null)
+
+    useEffect(()=>{
+        console.log(task);
+        setCreator(users.find(u=>u.id == task.creator_id))
+        setExecutor(users.find(u=>u.id == task.executor_id))
+        setStatus(statuses.find(s=>s.id == task.status_id))
+    }, [task, users])
+    
+    return (
+        <>
+            {(creator && status) &&
+                <Drawer title={task.name} onClose={closeDrawer} open={isDrawerOpen}>
+                    <Space
+                        direction="vertical"
+                        size={"large"}
+                    >
+                        <h4>Описание<Button type="flat"><EditOutlined /></Button></h4>
+                        <p>{task.description || <>У задачи нет описания</>}</p>
+                        <h4>Сроки<Button type="flat"><EditOutlined /></Button></h4>
+                        <div>Дата назначения: <TimePicker value={dayjs(+task.appointment_date)}/></div>
+                        <div>
+                            Ожидаемая дата завершения:
+                            {task.expected_date ?
+                                <TimePicker value={dayjs(+task.appointment_date)}/>
+                                : 'дата завершения не указана' 
+                            }
+                            
+                        </div>
+                        <h4>Создатель</h4>
+                        <div>
+                            <Avatar src={creator.img}/><> </>{creator.name}
+                        </div>
+                        <h4>Исполнитель</h4>
+                        {/* {executor &&
+                            <div>
+                            <Avatar src={executor.img}/><> </>{executor.name}
+                            </div>
+                        } */}
+                        <div>                            
+                            <Cascader
+                                options={[...users.map(u=> {
+                                    return {
+                                        value:u.id,
+                                        label: <>
+                                            <Avatar src={u.img}/><> </>{u.name}
+                                        </>
+                                    }
+                                })]}
+                                onChange={(_,option)=>{
+                                    addTaskExecutor(task.id, option[0].value)
+                                }}
+                            >
+                                {executor ?
+                                    <Button type="text" size="large" style={{display: 'flex', alignItems: 'center', padding: "15px 15px 15px 0"}}>
+                                        <Avatar src={executor.img}/>
+                                        {executor.name}
+                                    </Button>
+                                    :<Tag>Назначить</Tag>
+                                }
+                            </Cascader>
+                        </div>
+                    </Space>
+                </Drawer>
+            }
+        </>
+    )   
+}
+
 const CreateTaskForm = ({handlerChangeValue}) => {
 
     return (
@@ -374,6 +483,8 @@ const List = ({
     colors,
     statuses,
     showModalEditTask,
+    showDrawerEditTask,
+    closeDrawerEditTask,
     deleteTask,
     changeStatusTask,
     currentUserRole,
@@ -414,9 +525,15 @@ const List = ({
                             users={users}
                             addTaskExecutor={addTaskExecutor}
                         />
-                        <span onClick={() => {
-                            showModalEditTask(record)
-                        }}>
+                        <span
+                            style={{
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => {
+                                showDrawerEditTask(record);
+                                // showModalEditTask(record)
+                            }}
+                        >
                             {record.name}
                         </span>
                         </>
@@ -546,7 +663,20 @@ const ExecutorTask = ({
         }
         {!executor &&
         <>
-            {currentUserRole == 'creator' && 
+            <Cascader
+                options={[...users.map(u=> {
+                    return {
+                        value:u.id,
+                        label: <>
+                            <Avatar src={u.img}/><> </>{u.name}
+                        </>
+                    }
+                })]}
+                onChange={(_,option)=>addTaskExecutor(task.id, option[0].value)}
+            >
+                <PlusCircleOutlined /> 
+            </Cascader>
+            {/* {currentUserRole == 'creator' && 
                 <Popover
                     trigger='click'
                     content = {
@@ -582,7 +712,7 @@ const ExecutorTask = ({
                 >
                     <PlusCircleOutlined />
                 </Popover>
-            }
+            } */}
             {currentUserRole != 'creator' &&
                 <Button
                     type="text"

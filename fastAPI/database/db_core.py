@@ -4,7 +4,7 @@ from .models import Base, ColorStatus
 url = 'postgresql+psycopg://dplm_user:WLYiC66IBGy4LYQ5Lp60R8n8jNNcGup2@dpg-cpe47jnsc6pc73999vlg-a.oregon-postgres.render.com/dplm'
 localurl = 'postgresql+psycopg://postgres:1@localhost:5432/dplm'
 engine = create_engine(
-    url=url,
+    url=localurl,
     # echo=True,
 )
 

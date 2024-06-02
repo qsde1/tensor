@@ -86,6 +86,7 @@ class TasksStore{
     }
 
     addTaskExecutor = (taskId, executorId) => {
+        console.log(taskId, executorId);
         this.socket.send(JSON.stringify({
             action: 'add-task-executor',
             data: {

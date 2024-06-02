@@ -361,6 +361,7 @@ async def ws_task(
                     result = [user.as_dict() for user in users]
                     for user in result:
                         user['password'] = user['password'].decode()
+                    print(result)
                     await ws.send_json({
                         'action': 'return-users',
                         'data': result
