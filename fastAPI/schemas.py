@@ -9,7 +9,7 @@ class User(BaseModel):
 class UserOrm(User):
     id: int
 
-н
+
 class Board(BaseModel):
     name: str
     description: str
