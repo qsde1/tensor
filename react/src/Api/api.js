@@ -64,7 +64,7 @@ export async function delete_project(projectId){
     await apiAxios.get(
         `/project/${projectId}/delete`,
         {
-            headers: cookie.get('user_id'),
+            headers: {'cookie_token': cookie.get('token')}
         }
     )
     .then(res=>result = res)
