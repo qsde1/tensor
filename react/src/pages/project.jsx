@@ -2,7 +2,7 @@ import { Layout, Flex, Modal, Button, message, Segmented, Card, Tag, Space, List
 import { Outlet, useLoaderData, useParams } from "react-router-dom";
 import { createContext, useContext, useEffect, useState } from "react";
 import {CopyToClipboard} from 'react-copy-to-clipboard';
-import { get_project_by_id, get_project_creator, get_project_link_invite, get_users_by_project_id, } from "../Api/api";
+import { get_project_link_invite } from "../Api/api";
 import { SettingOutlined, UserOutlined } from "@ant-design/icons";
 import cookie from "cookiejs";
 import { faker } from '@faker-js/faker';

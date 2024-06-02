@@ -2,18 +2,14 @@ import { Flex, Layout, Button, Modal, Form, Input, Tag, Popover, Space, Table, A
 import { createContext, useContext, useEffect, useState } from "react";
 import { useLoaderData, useParams } from "react-router-dom";
 import { DeleteOutlined, PlusCircleOutlined, StepForwardOutlined, UserOutlined } from "@ant-design/icons";
-import { change_status_task_by_id, create_task, delete_task_by_id, edit_task, get_colors, get_statuses_by_project_id, get_task_list_by_id, get_tasks_by_list_id, get_user_by_task_id, get_user_role_by_project_id, take_task } from "../Api/api";
-import cookie from "cookiejs";
+// import { change_status_task_by_id, create_task, delete_task_by_id, edit_task, get_colors, get_statuses_by_project_id, get_task_list_by_id, get_tasks_by_list_id, get_user_by_task_id, get_user_role_by_project_id, take_task } from "../Api/api";
 import TextArea from "antd/es/input/TextArea";
-import { faker } from '@faker-js/faker';
 import dayjs from "dayjs";
 import { observer } from "mobx-react-lite";
-import userStore from "../store/user-store";
 import { 
     ProjectStoreContext,
     UserStoreContext,
  } from "../contexts";
-// const TasksListContext = createContext(null)
 
 const { Column, ColumnGroup } = Table;
 
@@ -25,7 +21,6 @@ let styles = {
     },
 
     headerStyle: {
-        // borderBottom: '1px solid rgb(215, 215, 215)',
         padding: '0 15px',
         height: '50px',
     },
