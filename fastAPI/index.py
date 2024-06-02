@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from demo_auth.views import router as demo_auth_router
 
 
 app = FastAPI()
@@ -13,3 +14,4 @@ app.add_middleware(
                    "Authorization", "User_id", "Cookie"],
 )
 
+app.include_router(demo_auth_router)
