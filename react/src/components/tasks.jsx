@@ -1,4 +1,4 @@
-import { Flex, Layout, Button, Modal, Form, Input, Tag, Popover, Space, Table, Avatar, DatePicker, List as ListANT, Card, Cascader, Drawer, TimePicker, Upload, Dropdown } from "antd";
+import { Flex, Layout, Button, Modal, Form, Input, Tag, Popover, Space, Table, Avatar, DatePicker, List as ListANT, Card, Cascader, Drawer, TimePicker, Upload, Dropdown, Skeleton } from "antd";
 import { createContext, createRef, useContext, useEffect, useRef, useState } from "react";
 import { useLoaderData, useParams } from "react-router-dom";
 import { DeleteOutlined, EditOutlined, PlusCircleOutlined, StepForwardOutlined, UnorderedListOutlined, UploadOutlined, UserOutlined } from "@ant-design/icons";
@@ -31,7 +31,6 @@ let styles = {
     layoutContent: {
     }
 }
-
 const TasksList = observer(() => {
     const tasksStore = useLoaderData();
     const projectStore = useContext(ProjectStoreContext);
@@ -41,7 +40,7 @@ const TasksList = observer(() => {
     const [isDrawerEditTaskOpen, setIsDrawerEditTaskOpen] = useState(false);
     const [viewType, setViewType] = useState('canban')
     const [editableTask, setEditableTask] = useState(null);
-    
+    const [isFirstLoading, setIsFirstLoadig] = useState(true);
 
     useEffect(() => {
         tasksStore.connect();
@@ -54,6 +53,12 @@ const TasksList = observer(() => {
             tasksStore.getTasks();
         }
     }, [tasksStore.isStoreReady])
+
+    useEffect(()=>{
+        if(tasksStore.tasks){
+            setIsFirstLoadig(false);
+        }
+    },[tasksStore.tasks])
 
 
     useEffect(() => {
@@ -208,6 +213,7 @@ const TasksList = observer(() => {
                             <Button onClick={showModalCreateTask}>Добавить задачу</Button>   {/* тут onClick={addTask} */}
                         </Flex> 
                     }
+                    {...[1,2,3,4,5,6].map(_=><Skeleton loading={isFirstLoading} active avatar></Skeleton>)}
                     {tasksStore.tasks.length > 0 &&
                     <>
                         {viewType == 'list' &&
@@ -227,7 +233,7 @@ const TasksList = observer(() => {
                         />
                         }
                         {viewType == 'canban' && 
-                            <Canban
+                        <Canban
                             colors={projectStore.colors}
                             statuses={projectStore.statuses}
                             tasks={tasksStore.tasks}
@@ -240,7 +246,7 @@ const TasksList = observer(() => {
                             currentUser={userStore.user}
                             showDrawerEditTask={showDrawerEditTask}
                             closeDrawerEditTask={closeDrawerEditTask}
-                            />
+                        />
                         }
                     </>
                     }
@@ -787,7 +793,11 @@ const Canban = ({
                                             currentUserRole={currentUserRole}
                                             currentUser={currentUser}
                                         />
-                                        {t.name}
+                                        <span
+                                            onClick={()=>showDrawerEditTask(t)}
+                                        >
+                                            {t.name}
+                                        </span>
                                     </Card>
                                 )
                             })

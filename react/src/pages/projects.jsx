@@ -8,6 +8,8 @@ import {
     Form,
     Input,
     Space,
+    Skeleton,
+    Spin,
 } from 'antd';
 import { redirect, useLoaderData, useNavigate } from 'react-router-dom';
 import { create_project, delete_project, get_projects } from '../Api/api';
@@ -39,14 +41,14 @@ function getRandomInt(max) {
 const Projects = () => {    
     // const userIdFromCookie = useLoaderData();
 
-    const [projectsList, setProjectsList] = useState([]);
+    const [projectsList, setProjectsList] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);    
+    const [isFirstLoading, setIsFirstLoading] = useState(true);
 
     async function updateProjectsList(){
         let projects = await get_projects();
         setProjectsList(projects);
     }
-
 
     useEffect(() => {
         (async ()=>{
@@ -54,6 +56,10 @@ const Projects = () => {
         })()
     }, [])
 
+    useEffect(()=> {
+        if(projectsList)
+            setIsFirstLoading(false)
+    }, [projectsList])
 
     const showModal = () => {
         setIsModalOpen(true);
@@ -86,6 +92,17 @@ const Projects = () => {
 
     return (
         <>
+            {isFirstLoading &&
+                <Flex
+                    align='center'
+                    justify='center'
+                    style={{
+                        height: '100%'
+                    }}
+                >
+                    <Spin size={'large'}/>
+                </Flex>
+            }
             <ProjectsContext.Provider value={projectsList}>
                 <Layout style={styles.layoutStyle}>
                     <ProjectsHeader handleClickAddProject={showModal}/>
