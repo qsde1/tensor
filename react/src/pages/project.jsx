@@ -1,9 +1,9 @@
-import { Layout, Flex, Modal, Button, message, Segmented, Card, Tag, Space, List, Avatar} from "antd";
+import { Layout, Flex, Modal, Button, message, Segmented, Card, Tag, Space, List, Avatar, Tabs, Select, Input, Form} from "antd";
 import { Outlet, useLoaderData, useParams } from "react-router-dom";
 import { createContext, useContext, useEffect, useState } from "react";
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { get_project_link_invite } from "../Api/api";
-import { SettingOutlined, UserOutlined } from "@ant-design/icons";
+import { ArrowDownOutlined, ArrowUpOutlined, DeleteOutlined, SettingOutlined, UserOutlined } from "@ant-design/icons";
 import cookie from "cookiejs";
 import { faker } from '@faker-js/faker';
 import { observer } from "mobx-react-lite";
@@ -69,6 +69,9 @@ const Project = observer(() => {
     const showMessage = (msg) => {
         messageApi.info(msg, 1.2)
     }
+    const showError = (msg) => {
+        messageApi.info(msg, 3.5, onclose=()=>projectStore.setExceptionMessage(null))
+    }
 
     useEffect(() => {
         projectStore.connect();
@@ -86,16 +89,13 @@ const Project = observer(() => {
         }
     }, [projectStore.isStoreReady])
 
+    useEffect(()=> {
+        if(projectStore.exceptionMessage){
+            showError(projectStore.exceptionMessage)
+        }
+    }, [projectStore.exceptionMessage])
+
     return (
-        // <ProjectContext.Provider value={{
-        //     project,
-        //     creator,
-        //     user,
-        //     openProjectSettingModal,
-        //     closeProjectSettingModal,
-        //     isProjectSettingModalOpen,
-        //     showMessage,
-        // }}>
             <Layout style={styles.layout}>
                 {contextHolder}
                 {!projectStore.project ?
@@ -110,6 +110,7 @@ const Project = observer(() => {
                             openProjectSettingModal={openProjectSettingModal}
                             name={projectStore.project.name}
                             currentUserRole={projectStore.currentUserRole}
+                            statuses={projectStore.statuses}
                         />
                         <Layout style={styles.layout}>
                             <ProjectStoreContext.Provider value={projectStore}>
@@ -126,6 +127,11 @@ const Project = observer(() => {
                                 isProjectSettingModalOpen={isProjectSettingModalOpen}
                                 showMessage={showMessage}
                                 users={projectStore.users}
+                                statuses={projectStore.statuses}
+                                colors={projectStore.colors}
+                                createStatus={projectStore.createStatus}
+                                swapStatuses={projectStore.swapStatuses}
+                                deleteStatus={projectStore.deleteStatus}
                             />
                         }
                     </>
@@ -133,7 +139,6 @@ const Project = observer(() => {
                     </>
                 }
             </Layout>
-        // </ProjectContext.Provider>
     )
 })
 
@@ -142,16 +147,9 @@ export default Project;
 const ProjectHeader = ({
     name,
     currentUserRole,
-    openProjectSettingModal
+    openProjectSettingModal,
 }) => {
-    // const {
-    //     project,
-    //     creator,
-    //     user,
-    //     openProjectSettingModal,
-    // } = useContext(ProjectContext);
-
-    // const creatorId = creator.id
+    
     return (
         <Header style={styles.header}>
             <Flex
@@ -179,55 +177,32 @@ const ProjectInfoModal = ({
     showMessage,
     users,
     creator,
-    project
+    project,
+    statuses,
+    colors,
+    createStatus,
+    swapStatuses,
+    deleteStatus,
 }) => {
-    // const {
-    //     isProjectSettingModalOpen,
-    //     closeProjectSettingModal,
-    //     project,
-    //     showMessage
-    // } = useContext(ProjectContext);
-    // const [creator, setCreator] = useState(null);
     const [currentSegment, setCurrentSegment] = useState('description')
-
-    // const updateCreator = async () => {
-    //     let result = await get_project_creator(project.id)
-    //     if(result.status == 200  && result.data)
-    //         setCreator(result.data)        
-    // }
-
-    
-
-    const close = async () => {
-        closeProjectSettingModal();
-    }
-
-    // useEffect(()=>{
-    //     (async ()=>{
-    //         await updateCreator();
-    //     })()
-    // }, [])
     
     return (
         <>
             <Modal
-                title='Информация о проекте'
+                title='Информация о проекте'                
                 centered
                 open={isProjectSettingModalOpen}
-                onOk={()=>{
-                    close();
-                }}
-                onCancel={()=>{                    
-                    close();
-                }}
-                width={'30%'}
-                footer={[]}
+                onOk={closeProjectSettingModal}
+                onCancel={closeProjectSettingModal}
+                width={'35%'}
+                footer={[]}                
             >
                 <Segmented
                     options={[
                         {label: 'описание проекта', value:"description"},
                         {label: 'участники', value:"users"},
-                        {label: 'приглашение', value:"invite"}
+                        {label: 'приглашение', value:"invite"},
+                        {label: 'настройки', value:"settings"},
                     ]}
                     block
                     onChange={(value)=>setCurrentSegment(value)}
@@ -238,6 +213,11 @@ const ProjectInfoModal = ({
                     project={project}
                     showMessage={showMessage}
                     creator={creator}
+                    statuses={statuses}
+                    colors={colors}
+                    createStatus={createStatus}
+                    swapStatuses={swapStatuses}
+                    deleteStatus={deleteStatus}
                 />
             </Modal>
         </>
@@ -251,37 +231,17 @@ const ProjectSettingModalSegment = ({
     project,
     showMessage,
     creator,
-}) => {    
+    statuses,
+    colors,
+    createStatus,
+    swapStatuses,
+    deleteStatus
+}) => {
     const [linkInvite, setLinkInvite] = useState(null);
-    // const [users, setUsers] = useState([
-    //     {name: 'Андрей', role:'user', url:faker.image.urlLoremFlickr({ category: 'people' })},
-    //     {name: 'Кристина', role:'admin', url:faker.image.urlLoremFlickr({ category: 'people' })},
-    //     {name: 'Олег', role:'user', url:faker.image.urlLoremFlickr({ category: 'people' })},
-    //     {name: 'Егор', role:'admin', url:faker.image.urlLoremFlickr({ category: 'people' })},
-    //     {name: 'Виктор', role:'user', url:faker.image.urlLoremFlickr({ category: 'people' })},
-    //     {name: 'Алена', role:'user', url:faker.image.urlLoremFlickr({ category: 'people' })},
-    // ]);
-
-    // const updateUsers = async () => {
-    //     let result = await get_users_by_project_id(project.id)
-    //     if(result.status == 200  && result.data)
-    //         setUsers(result.data)        
-    // }
-
-    
-    // useEffect(()=>{
-    //     if(segment == 'users'){
-    //         console.log('change segment');
-    //         (async ()=>{
-    //             // await updateUsers();
-    //         })()
-    //     }
-    // }, [segment]);
-
     return (
         <div
             style={{
-                margin: '5px 0 0 0'
+                margin: '5px 0 0 0',
             }}
         >
             {segment == 'description' &&
@@ -289,7 +249,6 @@ const ProjectSettingModalSegment = ({
                 direction="vertical"
                 size={"small"}
             >
-                
                 <p>Название: {project.name}</p>
                 <p>Владелец: {creator.name} {creator.surname[0]?.toUpperCase() + '.'}</p>
                 <p>Описание: {project.description ? project.description : 'у проекта нет описания'}</p>
@@ -312,7 +271,6 @@ const ProjectSettingModalSegment = ({
                                     description={u.role}
                                 >
                                 </List.Item.Meta>
-                                {/* {u.login} */}
                             </List.Item>
                         )}
                     />
@@ -365,6 +323,165 @@ const ProjectSettingModalSegment = ({
                 </Space>
             </Flex>
             }
+            {segment == 'settings' &&
+            <Tabs
+                defaultActiveKey="1"
+                tabPosition="left"
+                items={[
+                    {
+                        label: 'Статусы',
+                        key: 1,
+                        children:
+                            <StatusesSetting
+                                statuses={statuses}
+                                colors={colors}
+                                createStatus={createStatus}
+                                swapStatuses={swapStatuses}
+                                deleteStatus={deleteStatus}
+                            />
+                    },
+                    {
+                        label: 'Тэги',
+                        key: 2,
+                        children: <TabsSetting/>
+                    },
+                ]}
+            />
+            }
         </div>
     )
+}
+
+const StatusesSetting = ({
+    statuses,
+    colors,
+    createStatus,
+    swapStatuses,
+    deleteStatus,
+}) => {
+    const [isStatusCreateModalOpen, setIsStatusCreateModalOpen] = useState(false);
+
+    const openStatusCreateModalOpen = () => {
+        setIsStatusCreateModalOpen(true);
+    }
+
+    const closeStatusCreateModalOpen = () => {
+        setIsStatusCreateModalOpen(false);
+    }
+
+    let sortedStatuses = [...statuses].sort((a,b)=>{
+        if(a.coefficient < b.coefficient) return -1
+        if(a.coefficient > b.coefficient) return 1
+        return 0
+    })
+    return (
+        <>
+        <Space
+            direction="vertical"
+        >
+            <Tag
+                color="default"
+                onClick={openStatusCreateModalOpen}
+            >
+                Добавить
+            </Tag>
+            <ul>
+                {...sortedStatuses.map((s, index, array)=>
+                    <li>
+                        <Tag
+                            style={{width: '100px'}}
+                            color={colors.find(c=>c.id==s.color_id).name}
+                        >
+                            {s.name}
+                        </Tag>
+                        {index != 0 &&
+                            <Button
+                                style={{width: '50px'}}
+                                type='text'
+                                onClick={()=>{
+                                    swapStatuses(s.id, array[index-1].id)
+                                }}
+                            >
+                                <ArrowUpOutlined />
+                            </Button>
+                        }
+                        {array.length - 1 != index && 
+                            <Button
+                                style={{width: '50px'}}
+                                type='text'
+                                onClick={()=>{
+                                    swapStatuses(s.id, array[index+1].id)
+                                }}
+                            >
+                                <ArrowDownOutlined />
+                            </Button>
+                        }
+                        <Button
+                            style={{width: '50px'}}
+                            type='text'
+                            onClick={()=>{
+                                deleteStatus(s.id);
+                            }}
+                        >
+                            <DeleteOutlined />
+                        </Button>
+                    </li>
+                )} 
+            </ul>
+        </Space>
+        {isStatusCreateModalOpen && 
+            <StatusCreateModal
+                close={closeStatusCreateModalOpen}
+                isOpen={isStatusCreateModalOpen}
+                colors={colors} 
+                createStatus={createStatus}
+            />
+        }
+        </>
+    );
+}
+
+const StatusCreateModal = ({
+    isOpen,
+    close,
+    colors,
+    createStatus,
+}) => {
+    let statusObj = {}
+    return (
+        <Modal
+            open={isOpen}
+            onOk={()=>{
+                createStatus(statusObj);
+                close();
+            }}
+            onCancel={close}
+            centered
+            width={400}
+        >
+            <Form
+                onValuesChange={(_, newValues)=>{
+                    statusObj = newValues
+                    console.log(statusObj);
+                }}
+            >
+                <Form.Item label='Название' name='statusName'>
+                    <Input placeholder="название тега"/>
+                </Form.Item>
+                <Form.Item label='Цвет' name='colorId'>
+                    <Select>
+                        {...colors.map(c=>
+                            <Select.Option value={c.id}>
+                                <Tag color={c.name}>{c.name}</Tag>
+                            </Select.Option>
+                        )}
+                    </Select>
+                </Form.Item>
+            </Form>
+        </Modal>
+    )
+}
+
+const TabsSetting = () => {
+    return 'tags';
 }

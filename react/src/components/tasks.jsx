@@ -1,7 +1,7 @@
-import { Flex, Layout, Button, Modal, Form, Input, Tag, Popover, Space, Table, Avatar, DatePicker, List as ListANT, Card, Cascader, Drawer, TimePicker } from "antd";
-import { createContext, useContext, useEffect, useState } from "react";
+import { Flex, Layout, Button, Modal, Form, Input, Tag, Popover, Space, Table, Avatar, DatePicker, List as ListANT, Card, Cascader, Drawer, TimePicker, Upload, Dropdown } from "antd";
+import { createContext, createRef, useContext, useEffect, useRef, useState } from "react";
 import { useLoaderData, useParams } from "react-router-dom";
-import { DeleteOutlined, EditOutlined, PlusCircleOutlined, StepForwardOutlined, UserOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PlusCircleOutlined, StepForwardOutlined, UnorderedListOutlined, UploadOutlined, UserOutlined } from "@ant-design/icons";
 // import { change_status_task_by_id, create_task, delete_task_by_id, edit_task, get_colors, get_statuses_by_project_id, get_task_list_by_id, get_tasks_by_list_id, get_user_by_task_id, get_user_role_by_project_id, take_task } from "../Api/api";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
@@ -10,6 +10,7 @@ import {
     ProjectStoreContext,
     UserStoreContext,
  } from "../contexts";
+import Icon from "@ant-design/icons/lib/components/Icon";
 
 const { Column, ColumnGroup } = Table;
 
@@ -17,7 +18,9 @@ let styles = {
     layoutStyle: {
         height: '100%',
         width: '100%',
-        padding: '0 15px'
+        padding: '0 15px',
+        overflow: 'hidden',
+        overflowX:'auto',
     },
 
     headerStyle: {
@@ -36,7 +39,7 @@ const TasksList = observer(() => {
     const [isModalCreateTaskOpen, setIsModalCreateTaskOpen] = useState(false);
     const [isModalEditTaskOpen, setIsModalEditTaskOpen] = useState(false);    
     const [isDrawerEditTaskOpen, setIsDrawerEditTaskOpen] = useState(false);
-
+    const [viewType, setViewType] = useState('canban')
     const [editableTask, setEditableTask] = useState(null);
     
 
@@ -119,7 +122,9 @@ const TasksList = observer(() => {
     // }
    
     async function createTask(taskObj){
-        let minimalPriorityStatus = projectStore.statuses.find(s=>s.is_first);
+        let minCoeff = Math.min(...projectStore.statuses.map(s=>s.coefficient))
+        let firstStatus = projectStore.statuses.find(s=>s.coefficient == minCoeff);
+        console.log(firstStatus);
         let date = taskObj.expected_date;
         if(date)
             date = new Date(date.$y, date.$M, date.$D).getTime();        
@@ -129,7 +134,7 @@ const TasksList = observer(() => {
             description: '',
             executor_id: null,
             creator_id: userStore.user.id,
-            status_id: minimalPriorityStatus.id,
+            status_id: firstStatus.id,
             appointment_date: new Date().getTime(),
             expected_date: date ? date.toString() : date,
         }
@@ -168,6 +173,10 @@ const TasksList = observer(() => {
         setIsModalCreateTaskOpen(false);
     }
 
+    const changeViewType = (type) => {
+        setViewType(type)
+    }
+
 
     return (
         <>
@@ -179,6 +188,8 @@ const TasksList = observer(() => {
                     <TasksHeader
                         name={tasksStore.taskList.name}
                         handlerClick={showModalCreateTask}
+                        changeViewType={changeViewType}
+                        viewType={viewType}
                     />
 
                     <Layout.Content
@@ -199,6 +210,7 @@ const TasksList = observer(() => {
                     }
                     {tasksStore.tasks.length > 0 &&
                     <>
+                        {viewType == 'list' &&
                         <List
                             colors={projectStore.colors}
                             statuses={projectStore.statuses}
@@ -213,6 +225,23 @@ const TasksList = observer(() => {
                             showDrawerEditTask={showDrawerEditTask}
                             closeDrawerEditTask={closeDrawerEditTask}
                         />
+                        }
+                        {viewType == 'canban' && 
+                            <Canban
+                            colors={projectStore.colors}
+                            statuses={projectStore.statuses}
+                            tasks={tasksStore.tasks}
+                            showModalEditTask={showModalEditTask}
+                            deleteTask={deleteTask}
+                            changeStatusTask={changeStatusTask}
+                            currentUserRole={projectStore.currentUserRole}
+                            users={projectStore.users}
+                            addTaskExecutor={addTaskExecutor}
+                            currentUser={userStore.user}
+                            showDrawerEditTask={showDrawerEditTask}
+                            closeDrawerEditTask={closeDrawerEditTask}
+                            />
+                        }
                     </>
                     }
                     </Layout.Content>
@@ -254,6 +283,8 @@ export default TasksList;
 const TasksHeader = ({
     name,
     handlerClick,
+    changeViewType,
+    viewType,
 }) => {
     return (
         <Layout.Header
@@ -261,14 +292,49 @@ const TasksHeader = ({
         >
             <Flex
                 align="center"
+                justify="space-between"
                 style={{
                     height: '100%'
                 }}
             >
-                <b>{name}</b>
-                <Button
-                    type='text'
-                    onClick={handlerClick}>+</Button>
+                <Flex
+                     align="center"
+                >
+                    <b>{name}</b>
+                    <Button
+                        onClick={handlerClick}
+                        type='text'
+                    >
+                            +
+                    </Button>
+                </Flex>
+                <Flex
+                    align="center"
+                    gap='middle'
+                >
+                    <Button
+                        type='text'
+                        onClick={()=> changeViewType('list')}
+                        style={{
+                            backgroundColor: viewType == 'list' ? 'rgb(219, 219, 219)' : null
+                        }}
+                    >
+                            <UnorderedListOutlined />
+                    </Button>
+                    <Button
+                        type='text'
+                        onClick={()=> changeViewType('canban')}
+                        style={{
+                            backgroundColor: viewType == 'canban' ? 'rgb(219, 219, 219)' : null
+                        }}
+                    >
+                        <Icon
+                            component={()=>
+                                <svg fill="none" height="24" strokeWidth="1.5" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M3 3.6V20.4C3 20.7314 3.26863 21 3.6 21H20.4C20.7314 21 21 20.7314 21 20.4V3.6C21 3.26863 20.7314 3 20.4 3H3.6C3.26863 3 3 3.26863 3 3.6Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/><path d="M6 6L6 16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/><path d="M10 6V9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 6V13" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/><path d="M18 6V11" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            }
+                        />
+                    </Button>
+                </Flex>
             </Flex>
         </Layout.Header>
     )
@@ -352,7 +418,6 @@ const DrawerEditTask = ({
     const [status, setStatus] = useState(null)
 
     useEffect(()=>{
-        console.log(task);
         setCreator(users.find(u=>u.id == task.creator_id))
         setExecutor(users.find(u=>u.id == task.executor_id))
         setStatus(statuses.find(s=>s.id == task.status_id))
@@ -389,7 +454,7 @@ const DrawerEditTask = ({
                             </div>
                         } */}
                         <div>                            
-                            <Cascader
+                            {/* <Cascader
                                 options={[...users.map(u=> {
                                     return {
                                         value:u.id,
@@ -409,7 +474,30 @@ const DrawerEditTask = ({
                                     </Button>
                                     :<Tag>Назначить</Tag>
                                 }
-                            </Cascader>
+                            </Cascader> */}
+                            <Dropdown
+                                menu={{
+                                    items: [...users.map(u=> {
+                                        return {
+                                            key:u.id,
+                                            label: <>
+                                                <Avatar src={u.img}/><> </>{u.name}
+                                            </>
+                                        }
+                                    })],
+                                    onClick:(({key})=>{
+                                        addTaskExecutor(task.id, key);
+                                    })
+                                }}
+                            >
+                                {executor ?
+                                    <Button type="text" size="large" style={{display: 'flex', alignItems: 'center', padding: "15px 15px 15px 0"}}>
+                                        <Avatar src={executor.img}/>
+                                        {executor.name}
+                                    </Button>
+                                    :<Tag>Назначить</Tag>
+                                }
+                            </Dropdown>
                         </div>
                     </Space>
                 </Drawer>
@@ -612,6 +700,86 @@ const List = ({
     )
 }
 
+const Canban = ({
+    colors,
+    statuses,
+    tasks,
+    showModalEditTask,
+    deleteTask,
+    changeStatusTask,
+    currentUserRole,
+    users,
+    addTaskExecutor,
+    currentUser,
+    showDrawerEditTask,
+    closeDrawerEditTask,
+}) => {
+    let sortedStatuses = [...statuses].sort((a,b)=>{
+        if(a.coefficient < b.coefficient) return -1
+        if(a.coefficient > b.coefficient) return 1
+        return 0
+    })
+    return (
+        <Flex
+            align="start"      
+            gap={55}
+            style={{
+                height: '100%',
+            }}
+        >
+        {...sortedStatuses.map(s=>{
+            return (
+                <div
+                    style={{
+                        height: '95%',
+                        width: '350px',
+                        border: '1px solid rgb(129, 129, 129)',
+                        borderRadius: '10px',
+                        flexShrink: 0,
+                        padding: '5px 0 0 0'
+                    }}
+                >
+                    <div
+                        style={{
+                            height: '100%',
+                            width: '100%',
+                        }}
+                    >
+                        <p
+                            style={{
+                                width: '100%',
+                                textAlign: 'center',
+                            }}
+                        >
+                            <Tag color={colors.find(c=>c.id == s.color_id).name}>{s.name}</Tag>
+                            
+                        </p>
+                        <ul>
+                            {...tasks
+                                ?.filter(t=>t.status_id == s.id)
+                                .map(t=>{
+                                    return (
+                                        <li>
+                                            <ExecutorTask
+                                                task={t}
+                                                addTaskExecutor={addTaskExecutor}
+                                                users={users}
+                                                currentUserRole={currentUserRole}
+                                                currentUser={currentUser}
+                                            />
+                                            {t.name}
+                                        </li>
+                                    )
+                                })
+                            }
+                        </ul>
+                    </div>
+                </div>
+            )
+        })}
+        </Flex>
+    )
+}
 const ExecutorTask = ({
     task,    
     addTaskExecutor,
@@ -663,7 +831,7 @@ const ExecutorTask = ({
         }
         {!executor &&
         <>
-            <Cascader
+            {/* <Cascader
                 options={[...users.map(u=> {
                     return {
                         value:u.id,
@@ -675,7 +843,25 @@ const ExecutorTask = ({
                 onChange={(_,option)=>addTaskExecutor(task.id, option[0].value)}
             >
                 <PlusCircleOutlined /> 
-            </Cascader>
+            </Cascader> */}
+
+            <Dropdown
+                menu={{
+                    items: [...users.map(u=> {
+                        return {
+                            key:u.id,
+                            label: <>
+                                <Avatar src={u.img}/><> </>{u.name}
+                            </>
+                        }
+                    })],
+                    onClick:(({key})=>{
+                        addTaskExecutor(task.id, key);
+                    })
+                }}
+            >
+                <PlusCircleOutlined />
+            </Dropdown>
             {/* {currentUserRole == 'creator' && 
                 <Popover
                     trigger='click'

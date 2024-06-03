@@ -105,7 +105,8 @@ class StatusTask(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(default='новый статус')
-    is_first: Mapped[bool] = mapped_column(server_default="False")
+    coefficient: Mapped[int] = mapped_column(default=1)
+    # is_first: Mapped[bool] = mapped_column(server_default="False")
     project_id: Mapped[str] = mapped_column(ForeignKey('projects.id', ondelete="CASCADE"))
     color_id: Mapped[int] = mapped_column(ForeignKey('colors_statuses.id', ondelete="SET NULL"))
 
@@ -140,4 +141,11 @@ class Task(Base):
     creator: Mapped['User'] = relationship('User', foreign_keys=[creator_id])
     executor: Mapped['User'] = relationship('User', foreign_keys=[executor_id])
     status: Mapped['StatusTask'] = relationship(back_populates='tasks')
+
+
+class TaskFile(Base):
+    __tablename__  = 'task_files'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    file_name: Mapped[str] = mapped_column(nullable=False)
 

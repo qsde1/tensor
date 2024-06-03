@@ -11,7 +11,7 @@ from routers.users import router as routerUsers
 from routers.auth import router as routerAuth
 from database.db_core import session
 from database.models import ColorStatus
-
+from services.s3_client import s3_client
 
 
 #сбросить данные во всех таблицах
@@ -39,6 +39,12 @@ async def get_colors() -> list[ColorsDTOorm]:
         colors = s.query(ColorStatus).all()
         result = [ColorsDTOorm.model_validate(row, from_attributes=True) for row in colors]
         return result
+
+
+# @app.post('/test-selectel')
+# async def test():
+#     await s3_client.upload_file("test.txt")
+
 
 app.include_router(routerPage)
 app.include_router(routerProjects)

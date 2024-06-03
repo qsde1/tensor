@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from sqlalchemy.orm import joinedload
 
 from database.db_core import session
@@ -29,9 +30,9 @@ def create_project(proj:ProjectCreate):
         red = s.query(ColorStatus).where(ColorStatus.name == 'red').first()
         purple = s.query(ColorStatus).where(ColorStatus.name == 'purple').first()
 
-        status1 = StatusTask(name='не назначено', project_id=project.id, is_first=True, color_id=red.id)
-        status2 = StatusTask(name='в процессе', project_id=project.id, color_id=purple.id)
-        status3 = StatusTask(name='выполнено', project_id=project.id, color_id=green.id)
+        status1 = StatusTask(name='не назначено', project_id=project.id, color_id=red.id, coefficient=1)
+        status2 = StatusTask(name='в процессе', project_id=project.id, color_id=purple.id, coefficient=2)
+        status3 = StatusTask(name='выполнено', project_id=project.id, color_id=green.id, coefficient=3)
 
         s.add(status1)
         s.add(status2)
@@ -81,3 +82,35 @@ def get_project_users(project_id: int):
     with session() as s:
         project = s.query(Project).where(Project.id == project_id).options(joinedload(Project.users)).first()
         return project.users
+
+
+def create_status(project_id, status_name: str, color_id: int):
+    with session() as s:
+        max_coefficient = s.query(func.max(StatusTask.coefficient)).scalar()
+        status = StatusTask(
+            name=status_name,
+            coefficient=max_coefficient+1,
+            color_id=color_id,
+            project_id=project_id,
+        )
+        s.add(status)
+        s.commit()
+        return
+        # status = StatusTask(name=status.name)
+
+def swap_statuses(status_one_id, status_two_id):
+    with session() as s:
+        status_one = s.get(StatusTask, status_one_id)
+        status_two = s.get(StatusTask, status_two_id)
+        temp = status_one.coefficient
+        status_one.coefficient = status_two.coefficient
+        status_two.coefficient = temp
+        s.commit()
+        return
+
+def delete_status(status_id):
+    with session() as s:
+        status = s.get(StatusTask,status_id)
+        s.delete(status)
+        s.commit()
+        return

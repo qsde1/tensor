@@ -10,6 +10,7 @@ export default class ProjectStore{
     statuses = null;    
     colors = null;
     isStoreReady = false;
+    exceptionMessage = null;
     constructor(projectId){
         makeAutoObservable(this);
         this.projectId = projectId;
@@ -38,6 +39,9 @@ export default class ProjectStore{
                 case 'return-statuses':
                     this.setStatuses(res.data);
                     break;
+                case 'statuses-changed':
+                    this.getStatuses();
+                    break;
                 case 'return-users':
                     this.setUsers(res.data);
                     break;
@@ -52,6 +56,7 @@ export default class ProjectStore{
                     break;
                 case 'exception':
                     console.log(res.data);
+                    this.setExceptionMessage(res.data.msg);
                     break;
             }
         }
@@ -111,6 +116,31 @@ export default class ProjectStore{
 
     setUsers = (users) => {
         this.users = users;
+    }
+
+    createStatus = (status) => {
+        this.socket.send(JSON.stringify({
+            action: 'create-status',
+            data: status
+        }))
+    }
+
+    swapStatuses = (statusOneId, statusTwoId) => {
+        this.socket.send(JSON.stringify({
+            action: 'swap-statuses',
+            data: {statusOneId, statusTwoId}
+        }))
+    }
+
+    deleteStatus = (statusId) => {
+        this.socket.send(JSON.stringify({
+            action: 'delete-status',
+            data: {statusId}
+        }))
+    }
+
+    setExceptionMessage = (msg) => {
+        this.exceptionMessage = msg        
     }
 
     setIsStoreReady = (is) => {

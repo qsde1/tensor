@@ -1,7 +1,11 @@
+import json
 from builtins import type
 
+import psycopg.errors
 from fastapi import APIRouter, HTTPException, Response, Request, status, responses, Depends, WebSocket
 from pydantic import BaseModel
+from sqlalchemy.exc import SQLAlchemyError
+
 from database.db_core import session
 from database.models import User, Project, Backlog, StatusTask, ColorStatus, ProjectsUsers, ProjectLinkInvite
 from sqlalchemy import select, and_
@@ -387,7 +391,35 @@ async def ws_task(
                         'action': 'return-colors',
                         'data': result
                     })
-
+                case 'create-status':
+                    data = res.get('data')
+                    status_name = data.get('statusName')
+                    color_id = data.get('colorId')
+                    projects_service.create_status(project_id,status_name, color_id)
+                    await ws.send_json({
+                        'action': 'statuses-changed'
+                    })
+                case 'swap-statuses':
+                    data = res.get('data')
+                    status_one_id = data.get('statusOneId')
+                    status_two_id = data.get('statusTwoId')
+                    projects_service.swap_statuses(status_one_id, status_two_id)
+                    await ws.send_json({
+                        'action': 'statuses-changed'
+                    })
+                case 'delete-status':
+                    data = res.get('data')
+                    status_id = data.get('statusId')
+                    try:
+                        projects_service.delete_status(status_id)
+                    except SQLAlchemyError as e:
+                        await ws.send_json({
+                            'action': 'exception',
+                            'data': {'msg': 'нельзя удалить статус, на который ссылаются задачи'}
+                        })
+                    await ws.send_json({
+                        'action': 'statuses-changed'
+                    })
 
     except Exception as e:
         print("Got an exception ", e)

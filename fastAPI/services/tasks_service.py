@@ -10,6 +10,7 @@ def get_tasks_by_tasks_list_id(tasks_list_id: int):
 
 
 def create_task(data: TasksDTO):
+    print(data)
     with session() as s:
         task = Task(
             name=data.name,
