@@ -415,7 +415,7 @@ async def ws_task(
                     except SQLAlchemyError as e:
                         await ws.send_json({
                             'action': 'exception',
-                            'data': {'msg': 'нельзя удалить статус, на который ссылаются задачи'}
+                            'data': {'msg': 'Нельзя удалить статус, на который ссылаются задачи'}
                         })
                     await ws.send_json({
                         'action': 'statuses-changed'

@@ -719,6 +719,7 @@ const Canban = ({
         if(a.coefficient > b.coefficient) return 1
         return 0
     })
+    let draggableTaskId = null;
     return (
         <Flex
             align="start"      
@@ -730,6 +731,14 @@ const Canban = ({
         {...sortedStatuses.map(s=>{
             return (
                 <div
+                    onDragOver={e=>{
+                        e.preventDefault()
+                    }}
+                    onDrop={e=>{
+                        e.preventDefault()
+                        changeStatusTask(draggableTaskId, s.id)
+                        draggableTaskId = null;
+                    }} 
                     style={{
                         height: '95%',
                         width: '350px',
@@ -739,47 +748,58 @@ const Canban = ({
                         padding: '5px 0 0 0'
                     }}
                 >
-                    <div
+                    <p
                         style={{
-                            height: '100%',
                             width: '100%',
+                            textAlign: 'center',
+                            margin: '0 0 10px 0'
                         }}
                     >
-                        <p
-                            style={{
-                                width: '100%',
-                                textAlign: 'center',
-                            }}
-                        >
-                            <Tag color={colors.find(c=>c.id == s.color_id).name}>{s.name}</Tag>
-                            
-                        </p>
-                        <ul>
-                            {...tasks
-                                ?.filter(t=>t.status_id == s.id)
-                                .map(t=>{
-                                    return (
-                                        <li>
-                                            <ExecutorTask
-                                                task={t}
-                                                addTaskExecutor={addTaskExecutor}
-                                                users={users}
-                                                currentUserRole={currentUserRole}
-                                                currentUser={currentUser}
-                                            />
-                                            {t.name}
-                                        </li>
-                                    )
-                                })
-                            }
-                        </ul>
-                    </div>
+                        <Tag color={colors.find(c=>c.id == s.color_id).name}>{s.name}</Tag>
+                        
+                    </p>
+                    <Flex
+                        vertical
+                        align="center"
+                        gap={50}
+                        style={{
+                            width: '100%'
+                        }}
+                    >
+                        {...tasks
+                            ?.filter(t=>t.status_id == s.id)
+                            .map(t=>{
+                                return (
+                                    <Card
+                                        draggable
+                                        onDragStart={e=>{
+                                            draggableTaskId = t.id
+                                        }}                                                                              
+                                        style={{
+                                            width: '80%',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <ExecutorTask
+                                            task={t}
+                                            addTaskExecutor={addTaskExecutor}
+                                            users={users}
+                                            currentUserRole={currentUserRole}
+                                            currentUser={currentUser}
+                                        />
+                                        {t.name}
+                                    </Card>
+                                )
+                            })
+                        }
+                    </Flex>
                 </div>
             )
         })}
         </Flex>
     )
 }
+
 const ExecutorTask = ({
     task,    
     addTaskExecutor,
@@ -844,7 +864,7 @@ const ExecutorTask = ({
             >
                 <PlusCircleOutlined /> 
             </Cascader> */}
-
+            {currentUserRole == 'creator' && 
             <Dropdown
                 menu={{
                     items: [...users.map(u=> {
@@ -862,6 +882,8 @@ const ExecutorTask = ({
             >
                 <PlusCircleOutlined />
             </Dropdown>
+            }
+
             {/* {currentUserRole == 'creator' && 
                 <Popover
                     trigger='click'

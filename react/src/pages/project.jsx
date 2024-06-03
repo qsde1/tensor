@@ -67,7 +67,7 @@ const Project = observer(() => {
     }
 
     const showMessage = (msg) => {
-        messageApi.info(msg, 1.2)
+        messageApi.info(msg, 3.5)
     }
     const showError = (msg) => {
         messageApi.info(msg, 3.5, onclose=()=>projectStore.setExceptionMessage(null))
@@ -374,6 +374,7 @@ const StatusesSetting = ({
         if(a.coefficient > b.coefficient) return 1
         return 0
     })
+    let draggableStatusId = null
     return (
         <>
         <Space
@@ -387,14 +388,23 @@ const StatusesSetting = ({
             </Tag>
             <ul>
                 {...sortedStatuses.map((s, index, array)=>
-                    <li>
+                    <li
+                        draggable
+                        onDragStart={()=>draggableStatusId = s.id}
+                        onDragOver={e=>e.preventDefault()}
+                        onDrop={e=>{
+                            e.preventDefault()
+                            swapStatuses(draggableStatusId, s.id)
+                            draggableStatusId = null
+                        }}
+                    >
                         <Tag
                             style={{width: '100px'}}
                             color={colors.find(c=>c.id==s.color_id).name}
                         >
                             {s.name}
                         </Tag>
-                        {index != 0 &&
+                        {/* {index != 0 &&
                             <Button
                                 style={{width: '50px'}}
                                 type='text'
@@ -415,7 +425,7 @@ const StatusesSetting = ({
                             >
                                 <ArrowDownOutlined />
                             </Button>
-                        }
+                        } */}
                         <Button
                             style={{width: '50px'}}
                             type='text'
