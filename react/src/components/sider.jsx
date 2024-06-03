@@ -84,7 +84,7 @@ const Sider = () => {
                             >
                                 Проекты
                             </NavLink>
-                            <NavLink
+                            {/* <NavLink
                                 to='/teams'
                                 className={({isActive, isPending}) =>
                                     isActive ?
@@ -95,7 +95,7 @@ const Sider = () => {
                                 }
                             >
                                 Команды
-                            </NavLink>
+                            </NavLink> */}
                         </Space>
                     </Flex>
                 </Flex>
