@@ -25,7 +25,14 @@ const styles = {
 const Registration = () => {
   const navigate = useNavigate();
   const [formValues, setFormValues] = useState({});
-  console.log(formValues);
+
+  const onFinish = async (values) => {
+    let result = await apiAxios.post("/registration", {
+      ...values,
+      img: faker.image.urlLoremFlickr({ category: "people" }),
+    });
+    if (result.status == 200) navigate("/auth");
+  };
 
   return (
     <Layout style={styles.layout}>
@@ -38,8 +45,7 @@ const Registration = () => {
       >
         <Form
           name="basic"
-          // onFinish={onFinish}
-          // onFinishFailed={onFinishFailed}
+          onFinish={onFinish}
           autoComplete="off"
           onValuesChange={(changedValues, allValues) =>
             setFormValues(allValues)
@@ -96,7 +102,7 @@ const Registration = () => {
           <Form.Item
             label="Повторите пароль"
             name="confirm"
-            dependencies={["password"]} // Добавляем зависимость от поля password
+            dependencies={["password"]}
             hasFeedback
             rules={[
               {
@@ -124,16 +130,7 @@ const Registration = () => {
           >
             <Button
               type="primary"
-              // htmlType="submit"
-              onClick={async (e) => {
-                e.preventDefault();
-                console.log("qwe");
-                let result = await apiAxios.post("/registration", {
-                  ...formValues,
-                  img: faker.image.urlLoremFlickr({ category: "people" }),
-                });
-                if (result.status == 200) navigate("/auth");
-              }}
+              htmlType="submit"
             >
               Зарегистрироваться
             </Button>
