@@ -1,5 +1,6 @@
 import cookie from "cookiejs";
 import { action, makeAutoObservable } from "mobx";
+import { wsUrl } from "../cfg";
 class TasksStore{
     tasksListId = null
     tasks = null
@@ -12,7 +13,7 @@ class TasksStore{
     }
 
     connect = () => {
-        let ws = new WebSocket(`ws://localhost:8000/ws/${cookie.get('token')}/task-list/${this.tasksListId}`)
+        let ws = new WebSocket(`${wsUrl}/ws/${cookie.get('token')}/task-list/${this.tasksListId}`)
         this.setSocket(ws);
         ws.onopen = (e) => {
             console.log(e);
@@ -35,6 +36,8 @@ class TasksStore{
                 case 'task-deleted':
                 case 'status-task-changed':
                 case 'executor-addet':
+                case 'task-name-changed':
+                case 'task-description-changed':
                     this.getTasks();
                     break;
                 default:
@@ -99,6 +102,20 @@ class TasksStore{
         this.socket.send(JSON.stringify({
             action: 'change-status-task',
             data: {taskId, statusId}
+        }))
+    }
+
+    changeNameTask = (taskId, name) => {
+        this.socket.send(JSON.stringify({
+            action: 'change-name-task',
+            data: {taskId, name}
+        }))
+    }
+
+    changeDescriptionTask = (taskId, description) => {
+        this.socket.send(JSON.stringify({
+            action: 'change-description-task',
+            data: {taskId, description}
         }))
     }
 

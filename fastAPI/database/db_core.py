@@ -36,6 +36,7 @@ def create_tables():
         s.commit()
         return
 
+
 # def insert_data():
 #     with session() as s:
 #         test = TestTable(username='test2')

@@ -1,4 +1,4 @@
-import { Layout, Flex, Modal, Button, message, Segmented, Card, Tag, Space, List, Avatar, Tabs, Select, Input, Form} from "antd";
+import { Layout, Flex, Modal, Button, message, Segmented, Card, Tag, Space, List, Avatar, Tabs, Select, Input, Form, Spin} from "antd";
 import { Outlet, useLoaderData, useParams } from "react-router-dom";
 import { createContext, useContext, useEffect, useState } from "react";
 import {CopyToClipboard} from 'react-copy-to-clipboard';
@@ -43,16 +43,7 @@ const Project = observer(() => {
     const [messageApi, contextHolder] = message.useMessage();
     const params = useParams();
     const [isProjectSettingModalOpen, setIsProjectSettingModalOpen] = useState(false)
-    // const project = useLoaderData();
-    // const [project, setProject] = useState();
-    // const [creator, setCreator] = useState(null);
-
-    // const updateCreator = async () => {
-    //     let result = await get_project_creator(params.projectId)
-    //     if(result.status == 200  && result.data)
-    //         setCreator(result.data)
-    // }
-    
+    const [isFirstLoading, setIsFirstLoading] = useState(true);
 
     const openProjectSettingModal = () => {
         setIsProjectSettingModalOpen(true);
@@ -95,13 +86,24 @@ const Project = observer(() => {
         }
     }, [projectStore.exceptionMessage])
 
+    useEffect(()=> {
+        if(projectStore.project)
+            setIsFirstLoading(false)
+    }, [projectStore.project])
+
     return (
             <Layout style={styles.layout}>
                 {contextHolder}
-                {!projectStore.project ?
-                    <>
-                        <div>данного проекта не существует</div>
-                    </>
+                {isFirstLoading ?
+                    <Flex
+                        align='center'
+                        justify='center'
+                        style={{
+                            height: '100%'
+                        }}
+                    >
+                        <Spin size={'large'}/>
+                    </Flex>
                 :
                     <>
                     {projectStore.creator &&

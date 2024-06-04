@@ -134,6 +134,24 @@ async def ws_task(
                         {'action': 'status-task-changed'},
                         tasks_list_id
                     )
+                case 'change-name-task':
+                    data = res.get('data')
+                    task_id = data.get('taskId')
+                    name = data.get('name')
+                    tasks_service.change_name_task(task_id, name)
+                    await manager.broadcast(
+                        {'action': 'task-name-changed'},
+                        tasks_list_id
+                    )
+                case 'change-description-task':
+                    data = res.get('data')
+                    task_id = data.get('taskId')
+                    description = data.get('description')
+                    tasks_service.change_description_task(task_id, description)
+                    await manager.broadcast(
+                        {'action': 'task-description-changed'},
+                        tasks_list_id
+                    )
 
 
     except Exception as e:

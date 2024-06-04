@@ -1,5 +1,7 @@
+from sqlalchemy.orm import joinedload
+
 from database.db_core import session
-from database.models import User, Project, ProjectsUsers, Backlog, ColorStatus, StatusTask, Task
+from database.models import User, Project, ProjectsUsers, Backlog, ColorStatus, StatusTask, Task, TaskComment
 from shemas import TasksDTO
 
 
@@ -46,3 +48,39 @@ def add_task_executor(task_id: int, executor_id: int):
         task.executor_id = executor_id
         s.commit()
         return
+
+def change_name_task(task_id: int, name: str):
+    with session() as s:
+        task = s.query(Task).where(Task.id == task_id).first()
+        if name != "":
+            task.name = name
+            s.commit()
+        return
+
+
+def change_description_task(task_id: int, description: str):
+    with session() as s:
+        task = s.query(Task).where(Task.id == task_id).first()
+        task.description = description
+        s.commit()
+        return
+
+
+def get_comments(task_id: int):
+    with session() as s:
+        task = s.query(Task).where(Task.id == task_id).options(joinedload(Task.comments)).first()
+        return task.comments
+
+
+def create_comment(task_id: int, comment):
+    with session() as s:
+        t_com = TaskComment(
+            task_id=task_id,
+            user_id=comment.get('userId'),
+            text=comment.get('text'),
+            created=comment.get('created')
+        )
+        s.add(t_com)
+        s.commit()
+        return
+

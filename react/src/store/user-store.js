@@ -1,5 +1,5 @@
-import { makeAutoObservable } from "mobx";
 import { get_user_by_token } from "../Api/api";
+import { action, makeAutoObservable } from "mobx";
 
 class UserStore {
     user = null;

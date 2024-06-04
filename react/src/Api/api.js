@@ -1,9 +1,10 @@
 import axios from "axios";
 import cookie from "cookiejs";
+import { httpDevUrl } from "../cfg";
 
 export const apiAxios = axios.create({
-    baseURL: 'http://127.0.0.1:8000',
-    withCredentials: true,    
+    baseURL: httpDevUrl,
+    withCredentials: true,
 });
 
 export async function reset(){

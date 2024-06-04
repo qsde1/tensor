@@ -32,6 +32,8 @@ class User(Base):
         secondary='projects_users'
     )
 
+    users: Mapped[list['TaskComment']] = relationship(back_populates='user', cascade='all')
+
 
 class Project(Base):
     __tablename__ = 'projects'
@@ -141,6 +143,22 @@ class Task(Base):
     creator: Mapped['User'] = relationship('User', foreign_keys=[creator_id])
     executor: Mapped['User'] = relationship('User', foreign_keys=[executor_id])
     status: Mapped['StatusTask'] = relationship(back_populates='tasks')
+
+    comments: Mapped[list['TaskComment']] = relationship(back_populates='task', cascade='all')
+
+
+class TaskComment(Base):
+    __tablename__ = 'task_comments'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"), nullable=True)
+    task_id: Mapped[int] = mapped_column(ForeignKey('tasks.id', ondelete="CASCADE"), nullable=True)
+    created: Mapped[str]
+    text: Mapped[str]
+
+    user: Mapped['User'] = relationship('User', foreign_keys=[user_id])
+    task: Mapped['Task'] = relationship('Task', foreign_keys=[task_id])
+
 
 
 class TaskFile(Base):

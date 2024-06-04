@@ -1,5 +1,6 @@
 import cookie from "cookiejs";
 import { action, makeAutoObservable } from "mobx";
+import { wsUrl } from "../cfg";
 export default class ProjectStore{
     socket = null;
     projectId = null;
@@ -17,7 +18,7 @@ export default class ProjectStore{
     }
 
     connect = () => {
-        let ws = new WebSocket(`ws://localhost:8000/ws/${cookie.get('token')}/project/${this.projectId}`)
+        let ws = new WebSocket(`${wsUrl}/ws/${cookie.get('token')}/project/${this.projectId}`)
         this.setSocket(ws);
         ws.onopen = (e) => {
             console.log(e);

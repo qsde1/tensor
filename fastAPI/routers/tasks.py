@@ -1,11 +1,11 @@
-from fastapi import APIRouter, HTTPException, Response, Request, status
+from fastapi import APIRouter, HTTPException, Response, Request, status, WebSocket
 from pydantic import BaseModel
 from database.db_core import session
 from database.models import User, Project, Backlog, TaskList, Task
 from sqlalchemy import select, Table
 from sqlalchemy.orm import selectinload
 from shemas import TasksDTO, TasksDTOorm, UserDTO, UserDTOorm, ChangeStatusTaskDTO
-
+from services import tasks_service
 router = APIRouter(
     tags=['tasks']
 )
@@ -116,4 +116,62 @@ async def take_task(task_id: int, req: Request) -> UserDTOorm | None:
         result = UserDTOorm.model_validate(user, from_attributes=True)
         print(result)
         return result
+
+class ConnectionManager:
+    def __init__(self) -> None:
+        self.active_connections: list[int,WebSocket] = {}
+        print("Creating a list task sockets: ",self.active_connections)
+
+    async def connect(self, task_id: int, websocket: WebSocket):
+        await websocket.accept()
+        if not self.active_connections.get(task_id):
+            self.active_connections[task_id] = []
+        self.active_connections[task_id].append(websocket)
+        print("task sockets: ",self.active_connections)
+
+    async def disconnect(self, task_id: int, websocket: WebSocket):
+        self.active_connections[task_id].remove(websocket)
+        print("task sockets: ",self.active_connections)
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
+        print("Sent a personal msg to , ",websocket)
+
+    async def broadcast(self, data, task_id: int):
+        for connection in self.active_connections[task_id]:
+            await connection.send_json(data)
+
+
+manager = ConnectionManager()
+
+@router.websocket('/ws/{token}/task/{task_id}')
+async def ws_task(
+    ws: WebSocket,
+    token: str,
+    task_id: int
+):
+    await manager.connect(task_id, ws)
+    try:
+        while True:
+            res = await ws.receive_json()
+            action = res.get('action')
+            match action:
+                case 'get-comments':
+                    comments = tasks_service.get_comments(task_id)
+                    result = [c.as_dict() for c in comments]
+                    await ws.send_json({
+                        'action': 'return-comments',
+                        'data': result
+                    })
+                case 'create-comment':
+                    data = res.get('data')
+                    comment = data.get('comment')
+                    tasks_service.create_comment(task_id, comment)
+                    await manager.broadcast({'action': 'comment-created'}, task_id)
+
+
+    except Exception as e:
+        print("Got an exception ", e)
+        await manager.disconnect(task_id, ws)
+
 

@@ -11,6 +11,7 @@ import {
     UserStoreContext,
  } from "../contexts";
 import Icon from "@ant-design/icons/lib/components/Icon";
+import CommentsStore from "../store/comments-store";
 
 const { Column, ColumnGroup } = Table;
 
@@ -95,37 +96,6 @@ const TasksList = observer(() => {
         setIsDrawerEditTaskOpen(false)
     }
 
-    // async function updateTasksListState(){
-    //     let result  = await get_task_list_by_id(tasksListId);
-    //     if(result.status == 200)
-    //         setTasksList(result.data)
-    // }
-
-    // async function updateTasksState(){
-    //     let result = await get_tasks_by_list_id(tasksListId);        
-    //     if(result.status == 200){
-    //         setTasks(result.data);
-    //     }
-    // }
-    
-    // async function updateStatusesState(){
-    //     let result = await get_statuses_by_project_id(projectId);
-    //     if(result.status == 200)
-    //         setStatuses(result.data);
-    // }
-
-    // async function updateUserRole(){
-    //     let result = await get_user_role_by_project_id(projectId)
-    //     if(result.status == 200){
-    //         setUserRole(result.data);
-    //     }
-    // }
-
-    // const updateTask = async (task) => {
-    //     await updateTaskapi(task);
-    //     await updateTasksState();
-    // }
-   
     async function createTask(taskObj){
         let minCoeff = Math.min(...projectStore.statuses.map(s=>s.coefficient))
         let firstStatus = projectStore.statuses.find(s=>s.coefficient == minCoeff);
@@ -144,8 +114,6 @@ const TasksList = observer(() => {
             expected_date: date ? date.toString() : date,
         }
         tasksStore.createTask(task)
-        // await create_task(task);
-        // await updateTasksState();
     }
 
     async function editTask(task){
@@ -185,6 +153,7 @@ const TasksList = observer(() => {
 
     return (
         <>
+            {...[1,2,3,4,5,6].map(_=><Skeleton loading={isFirstLoading} active avatar></Skeleton>)}
             <Layout
                 style={styles.layoutStyle}
             >   
@@ -213,7 +182,6 @@ const TasksList = observer(() => {
                             <Button onClick={showModalCreateTask}>Добавить задачу</Button>   {/* тут onClick={addTask} */}
                         </Flex> 
                     }
-                    {...[1,2,3,4,5,6].map(_=><Skeleton loading={isFirstLoading} active avatar></Skeleton>)}
                     {tasksStore.tasks.length > 0 &&
                     <>
                         {viewType == 'list' &&
@@ -278,6 +246,11 @@ const TasksList = observer(() => {
                     users={projectStore.users}
                     statuses={projectStore.statuses}
                     addTaskExecutor={addTaskExecutor}
+                    currentUser={userStore.user}
+                    currentUserRole={projectStore.currentUserRole}
+                    changeNameTask={tasksStore.changeNameTask}
+                    changeDescriptionTask={tasksStore.changeDescriptionTask}
+                    deleteTask={deleteTask}
                 />
             }
         </>
@@ -409,7 +382,7 @@ const EditTaskModal = ({
     )
 }
 
-const DrawerEditTask = ({
+const DrawerEditTask = observer(({
     closeDrawer,
     isDrawerOpen,
     editTask,
@@ -417,11 +390,39 @@ const DrawerEditTask = ({
     users,
     statuses,
     addTaskExecutor,
+    currentUser,
+    currentUserRole,
+    changeNameTask,
+    changeDescriptionTask,
+    deleteTask
 }) => {
-
+    const ref = useRef(new CommentsStore(task.id))
+    let commentsStore = ref.current
     const [creator, setCreator] = useState(null)
     const [executor, setExecutor] = useState(null)
     const [status, setStatus] = useState(null)
+
+    const [isNameEdit, setIsNameEdit] = useState(false)
+    const [nameTask, setNameTask] = useState(null);
+
+    const [isDescriptionEdit, setIsDescriptionEdit] = useState(false)
+    const [descriptionTask, setDescriptionTask] = useState(null)
+
+    const [commentText, setCommentText] = useState(null)
+
+
+    useEffect(()=>{
+        commentsStore.connect()
+        return ()=>commentsStore.close();
+    },[])
+
+    useEffect(()=>{
+        if(commentsStore.isStoreReady){
+            commentsStore.getComments()
+        }
+
+    }, [commentsStore.isStoreReady])
+
 
     useEffect(()=>{
         setCreator(users.find(u=>u.id == task.creator_id))
@@ -432,13 +433,69 @@ const DrawerEditTask = ({
     return (
         <>
             {(creator && status) &&
-                <Drawer title={task.name} onClose={closeDrawer} open={isDrawerOpen}>
-                    <Space
-                        direction="vertical"
-                        size={"large"}
+                <Drawer title='Информация о задаче' onClose={closeDrawer} open={isDrawerOpen}>
+                    <Flex
+                        vertical
+                        gap='middle'
+                        style={{
+                            height: '100%'
+                        }}
+                        // size={"middle"}
                     >
-                        <h4>Описание<Button type="flat"><EditOutlined /></Button></h4>
-                        <p>{task.description || <>У задачи нет описания</>}</p>
+                        <h4>
+                            Название
+                            {currentUserRole == 'creator' && 
+                            <Button
+                                type="flat"
+                                onClick={()=>{
+                                    setIsNameEdit(true)
+                                    setNameTask(task.name)
+                                }}>
+                                <EditOutlined />
+                            </Button>
+                            }
+                        </h4>
+                        {isNameEdit ?
+                            <>
+                                <Input value={nameTask} onChange={(e)=>setNameTask(e.target.value)}/>
+                                <Button onClick={()=>{
+                                    changeNameTask(task.id, nameTask);
+                                    setNameTask(null);
+                                    setIsNameEdit(false);
+                                }}>Сохранить</Button>
+                            </>
+                            
+                            : <p>{task.name}</p>
+                        }
+
+                        <h4>
+                            Описание
+                            {currentUserRole == 'creator' &&
+                                <Button
+                                    type="flat"
+                                    onClick={()=>{
+                                        setIsDescriptionEdit(true)
+                                        setDescriptionTask(task.description)
+                                    }}
+                                >
+                                    <EditOutlined />
+                                </Button>
+                            }
+                        </h4>
+                        {isDescriptionEdit ?
+                            <>
+                                <Input value={descriptionTask} onChange={(e)=>setDescriptionTask(e.target.value)}/>
+                                <Button onClick={()=>{
+                                    changeDescriptionTask(task.id, descriptionTask);
+                                    setDescriptionTask(null);
+                                    setIsDescriptionEdit(false);
+                                }}>
+                                    Сохранить
+                                </Button>
+                            </>
+                            : <p>{task.description ||<>У задачи нет описания</>}</p>
+                        }
+
                         <h4>Сроки<Button type="flat"><EditOutlined /></Button></h4>
                         <div>Дата назначения: <TimePicker value={dayjs(+task.appointment_date)}/></div>
                         <div>
@@ -449,38 +506,15 @@ const DrawerEditTask = ({
                             }
                             
                         </div>
+
                         <h4>Создатель</h4>
                         <div>
                             <Avatar src={creator.img}/><> </>{creator.name}
                         </div>
-                        <h4>Исполнитель</h4>
-                        {/* {executor &&
-                            <div>
-                            <Avatar src={executor.img}/><> </>{executor.name}
-                            </div>
-                        } */}
+                        <h4>Исполнитель</h4>                       
                         <div>                            
-                            {/* <Cascader
-                                options={[...users.map(u=> {
-                                    return {
-                                        value:u.id,
-                                        label: <>
-                                            <Avatar src={u.img}/><> </>{u.name}
-                                        </>
-                                    }
-                                })]}
-                                onChange={(_,option)=>{
-                                    addTaskExecutor(task.id, option[0].value)
-                                }}
-                            >
-                                {executor ?
-                                    <Button type="text" size="large" style={{display: 'flex', alignItems: 'center', padding: "15px 15px 15px 0"}}>
-                                        <Avatar src={executor.img}/>
-                                        {executor.name}
-                                    </Button>
-                                    :<Tag>Назначить</Tag>
-                                }
-                            </Cascader> */}
+                        
+                            {currentUserRole == 'creator' && 
                             <Dropdown
                                 menu={{
                                     items: [...users.map(u=> {
@@ -504,13 +538,91 @@ const DrawerEditTask = ({
                                     :<Tag>Назначить</Tag>
                                 }
                             </Dropdown>
+                            }
+                            {currentUserRole != 'creator' && 
+                            <p>
+                                <Avatar src={executor.img}/>{executor.name}
+                            </p>
+                            }
                         </div>
-                    </Space>
+                        <Button color="red" onClick={()=>{
+                            deleteTask(task.id)
+                            closeDrawer();
+                        }}>
+                                Удалить
+                        </Button>
+                        <h4>Комментарии</h4>
+                        <Flex
+                            vertical
+                            justify="space-between"
+                            style={{
+                                // border: '1px solid black',
+                                flexGrow: '2',
+                                overflow: 'hidden',
+                                overflowY: 'auto',
+                            }}
+                        >
+                            <div>
+                                <Skeleton loading={!commentsStore.comments} active></Skeleton>
+                                {commentsStore.comments &&
+                                    <Space
+                                        direction="vertical"
+                                        size='large'
+                                        style={{
+                                            width: '100%',
+                                        }}
+                                    >
+                                        {...commentsStore.comments?.map(c=>(
+                                        <p
+                                            style={{
+                                                backgroundColor: 'rgb(227,227,227)',
+                                                borderRadius: '10px',
+                                                padding: '2px 5px',
+                                                overflowWrap: 'break-word',
+                                                whiteSpace: 'wrap'
+                                            }}
+                                        >
+                                            <Avatar src={users.find(u=>u.id==c.user_id).img}/>{users.find(u=>u.id==c.user_id).name}<br/>
+                                            {c.text}
+                                        </p>
+                                    ))}
+                                    </Space>
+                                }
+                            </div>
+                        </Flex>
+                        <Flex
+                            gap={'small'}
+                            style={{
+                                flexGrow: 0,
+                            }}
+                        >
+                            <Input
+                                type="text"
+                                value={commentText}
+                                onChange={e=>setCommentText(e.target.value)}
+                            />
+                            <Button
+                                type=""
+                                onClick={()=>{
+                                    if(commentText != ""){
+                                        commentsStore.createComment({
+                                            text:commentText,
+                                            userId:currentUser.id,
+                                            created: new Date().getTime()
+                                        })
+                                        setCommentText(null)
+                                    }
+                                }}
+                            >
+                                Отправить
+                            </Button>
+                        </Flex>
+                    </Flex>
                 </Drawer>
             }
         </>
     )   
-}
+})
 
 const CreateTaskForm = ({handlerChangeValue}) => {
 
@@ -877,7 +989,7 @@ const ExecutorTask = ({
             {currentUserRole == 'creator' && 
             <Dropdown
                 menu={{
-                    items: [...users.map(u=> {
+                    items: [...users.map(u=>{
                         return {
                             key:u.id,
                             label: <>
@@ -894,43 +1006,6 @@ const ExecutorTask = ({
             </Dropdown>
             }
 
-            {/* {currentUserRole == 'creator' && 
-                <Popover
-                    trigger='click'
-                    content = {
-                        <Card
-                            bordered={false}
-                            style={{
-                                width: '150px'
-                            }}
-                        >
-                            <ListANT
-                            style={{
-                                cursor: 'pointer'
-                            }}
-                            dataSource={users}
-                            renderItem={(item, index)=> (
-                                <ListANT.Item
-                                    onClick={()=>addTaskExecutor(task.id, item.id)}
-                                >
-                                    <ListANT.Item.Meta
-                                        style={{
-                                            overflow: 'hidden',
-                                            whiteSpace: 'nowrap',
-                                            textOverflow: 'ellipsis',
-                                        }}
-                                        avatar={<Avatar src={item.img}/>}
-                                        description={item.name}
-                                    />
-                                </ListANT.Item>
-                            )}
-                        />
-                        </Card>
-                    }
-                >
-                    <PlusCircleOutlined />
-                </Popover>
-            } */}
             {currentUserRole != 'creator' &&
                 <Button
                     type="text"
@@ -943,16 +1018,6 @@ const ExecutorTask = ({
             }
         </>
         }
-        {/* {!task.executor_id && 
-            <Button
-                type="text"
-                onClick={
-                    ()=>takeTask(taskId)
-                }
-            >
-                <PlusCircleOutlined />
-            </Button>
-        } */}
         </>
     )
 

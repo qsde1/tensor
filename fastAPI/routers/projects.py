@@ -247,12 +247,12 @@ async def get_project_link_invite(project_id: int) -> str:
         link_proj = ProjectLinkInvite(project_id = project_id, link=link)
         s.add(link_proj)
         s.commit()
-        return ' https://tensor-5ha6.onrender.com/projects/join/' + link
+        return 'https://tensor-5ha6.onrender.com/projects/join/' + link
 
 
 @router.get('/projects/join/{link_invite}')
 async def join_to_project(link_invite: str):
-    return responses.RedirectResponse('http://localhost:5173/join/' + link_invite)
+    return responses.RedirectResponse('ttps://tensor-5ha6.onrender.com/projects/join/' + link_invite)
 
 
 @router.get('/projects/join/{link_invite}/add-user-to-project')
@@ -396,17 +396,29 @@ async def ws_task(
                     status_name = data.get('statusName')
                     color_id = data.get('colorId')
                     projects_service.create_status(project_id,status_name, color_id)
-                    await ws.send_json({
-                        'action': 'statuses-changed'
-                    })
+                    await manager.broadcast(
+                        {
+                            'action': 'statuses-changed'
+                        },
+                        project_id,
+                    )
+                    # await ws.send_json({
+                    #     'action': 'statuses-changed'
+                    # })
                 case 'swap-statuses':
                     data = res.get('data')
                     status_one_id = data.get('statusOneId')
                     status_two_id = data.get('statusTwoId')
                     projects_service.swap_statuses(status_one_id, status_two_id)
-                    await ws.send_json({
-                        'action': 'statuses-changed'
-                    })
+                    await manager.broadcast(
+                        {
+                            'action': 'statuses-changed'
+                        },
+                        project_id,
+                    )
+                    # await ws.send_json({
+                    #     'action': 'statuses-changed'
+                    # })
                 case 'delete-status':
                     data = res.get('data')
                     status_id = data.get('statusId')
@@ -417,9 +429,15 @@ async def ws_task(
                             'action': 'exception',
                             'data': {'msg': 'Нельзя удалить статус, на который ссылаются задачи'}
                         })
-                    await ws.send_json({
-                        'action': 'statuses-changed'
-                    })
+                    await manager.broadcast(
+                        {
+                            'action': 'statuses-changed'
+                        },
+                        project_id,
+                    )
+                    # await ws.send_json({
+                    #     'action': 'statuses-changed'
+                    # })
 
     except Exception as e:
         print("Got an exception ", e)

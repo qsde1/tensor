@@ -1,5 +1,6 @@
-import { makeAutoObservable } from "mobx";
 import cookie from "cookiejs";
+import { action, makeAutoObservable } from "mobx";
+import { wsUrl } from "../cfg";
 class TaskListsStore{
     taskLists = null
     socket = null
@@ -11,7 +12,7 @@ class TaskListsStore{
     }
 
     connect = () => {
-        let ws = new WebSocket(`ws://localhost:8000/ws/${cookie.get('token')}/backlog/${this.backlogId}/tasks-lists`)
+        let ws = new WebSocket(`${wsUrl}/ws/${cookie.get('token')}/backlog/${this.backlogId}/tasks-lists`)
         this.setSocket(ws);
         ws.onopen = (e) => {
             console.log(e);

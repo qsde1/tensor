@@ -1,5 +1,5 @@
 import { Await, NavLink, Outlet, useLoaderData, useParams } from 'react-router-dom'
-import { Layout, Flex, Button, Modal, Form, Input } from "antd";
+import { Layout, Flex, Button, Modal, Form, Input, Spin, Skeleton } from "antd";
 import { createContext, useContext, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { TasksListsStoreContext } from '../contexts';
@@ -36,6 +36,7 @@ const Backlog = observer(() => {
     // const [backlog, setBacklog] = useState(null);
     // const [taskLists, setTaskLists] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isFirstLoading, setIsFirstLoading] = useState(true);
 
     // let backlogNotState = backlog;
     // const [currentList, setCurrentList] = useState(null);
@@ -71,6 +72,11 @@ const Backlog = observer(() => {
         }
     }, [taskListStore.isStoreReady])
 
+    useEffect(()=> {
+        if(taskListStore.taskLists)
+            setIsFirstLoading(false)
+    }, [taskListStore.taskLists])
+
     const showModal = () => {
         setIsModalOpen(true);
     }
@@ -103,6 +109,13 @@ const Backlog = observer(() => {
 
     return(        
         <>
+        {isFirstLoading && 
+            <div style={{padding: '50px'}}>
+                <Skeleton loading={isFirstLoading} active avatar></Skeleton>
+                <Skeleton loading={isFirstLoading} active avatar></Skeleton>
+                <Skeleton loading={isFirstLoading} active avatar></Skeleton>
+            </div>
+        }
         {taskListStore.taskLists &&
             <>
                 <Header
