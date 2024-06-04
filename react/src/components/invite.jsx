@@ -3,6 +3,8 @@ import { useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { join_user_to_project } from "../Api/api"
 
+
+//барахло, не трогаем
 const Invite = () => {
     const { link } = useParams()
     const navigate = useNavigate()

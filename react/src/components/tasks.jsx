@@ -39,7 +39,7 @@ const TasksList = observer(() => {
     const [isModalCreateTaskOpen, setIsModalCreateTaskOpen] = useState(false);
     const [isModalEditTaskOpen, setIsModalEditTaskOpen] = useState(false);    
     const [isDrawerEditTaskOpen, setIsDrawerEditTaskOpen] = useState(false);
-    const [viewType, setViewType] = useState('canban')
+    const [viewType, setViewType] = useState('list')
     const [editableTask, setEditableTask] = useState(null);
     const [isFirstLoading, setIsFirstLoadig] = useState(true);
 

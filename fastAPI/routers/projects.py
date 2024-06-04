@@ -247,7 +247,7 @@ async def get_project_link_invite(project_id: int) -> str:
         link_proj = ProjectLinkInvite(project_id = project_id, link=link)
         s.add(link_proj)
         s.commit()
-        return 'https://tensor-5ha6.onrender.com/projects/join/' + link
+        return link
 
 
 @router.get('/projects/join/{link_invite}')
