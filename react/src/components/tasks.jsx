@@ -541,7 +541,12 @@ const DrawerEditTask = observer(({
                             }
                             {currentUserRole != 'creator' && 
                             <p>
-                                <Avatar src={executor.img}/>{executor.name}
+                                {executor ?
+                                <>
+                                    <Avatar src={executor.img}/>{executor.name}
+                                </>
+                                    : 'У задачи нет исполнителя'
+                                }
                             </p>
                             }
                         </div>
